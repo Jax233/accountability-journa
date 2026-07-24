@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>I SEE YOU & YOU ARE PERFECT</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,11 +19,8 @@
 
   .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
   .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-
   .btn-ghost { border:1.5px solid #dc2626; color:#f87171; background: rgba(220,38,38,0.04); transition: all .18s ease; }
   .btn-ghost:hover { background: rgba(220,38,38,0.12); box-shadow: 0 0 20px rgba(220,38,38,0.25); }
-
   .card { background:#0a0a0b; border:1px solid #18181b; }
 
   .day-cell { transition: all .15s ease; }
@@ -36,15 +34,26 @@
   .stripe { transition: all .25s ease; }
   .stripe.filled { background:#dc2626; box-shadow: 0 0 8px rgba(220,38,38,0.7); }
   .stripe.empty { background:#27272a; }
+
+  #loading-overlay { background:#000; }
+  .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body class="bg-black text-zinc-100">
 <div class="max-w-md mx-auto min-h-screen bg-black flex flex-col relative border-x border-zinc-900">
 
-  <div class="flex-1 overflow-y-auto">
-    <div class="px-5 pt-8 pb-4">
-      <p class="text-red-600 text-[11px] font-bold tracking-[0.3em] uppercase mb-1">Radical Accountability</p>
-      <h1 class="text-2xl font-black italic uppercase tracking-tight leading-none">I See You &amp;<br>You Are Perfect</h1>
+  <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="app-content" class="flex-1 overflow-y-auto hidden">
+    <div class="px-5 pt-8 pb-4 flex items-start justify-between">
+      <div>
+        <p class="text-red-600 text-[11px] font-bold tracking-[0.3em] uppercase mb-1">Radical Accountability</p>
+        <h1 class="text-2xl font-black italic uppercase tracking-tight leading-none">I See You &amp;<br>You Are Perfect</h1>
+      </div>
+      <button id="btn-signout" class="text-zinc-500 hover:text-red-500 text-[10px] font-bold uppercase tracking-wide mt-2 transition">Sign Out</button>
     </div>
 
     <!-- Streak Banner -->
@@ -88,48 +97,55 @@
 
     <!-- Action Buttons -->
     <div class="px-5 pb-10 space-y-3">
-      <a id="btn-log-daily" href="daily-entry.html" class="btn-primary block text-center w-full text-white font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
+      <a href="daily-entry.html" class="btn-primary block text-center w-full text-white font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
         + Log Daily Entry
       </a>
-      <a id="btn-log-training" href="training-log.html" class="btn-ghost block text-center w-full font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
+      <a href="training-log.html" class="btn-ghost block text-center w-full font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
         + Log Training
       </a>
     </div>
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-(function(){
-  const STORAGE_KEY = 'radicalAccountabilityData';
-  const WEEKDAYS = ['S','M','T','W','T','F','S'];
+(async function(){
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const WEEKDAYS = ['S','M','T','W','T','F','S'];
 
-  let db = loadDB();
+  const session = await requireSession();
+  if(!session) return;
+
+  let db = { entries: {}, trainings: {} };
   let calViewDate = new Date();
 
-  function loadDB(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : { entries: {}, trainings: {} };
-    } catch(e){ return { entries: {}, trainings: {} }; }
-  }
   function fmtDate(d){
     const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
     return `${y}-${m}-${day}`;
   }
   function todayStr(){ return fmtDate(new Date()); }
 
+  async function loadData(){
+    const { data: entries, error: e1 } = await sb.from('entries').select('*').eq('user_id', session.user.id);
+    if(e1) console.error(e1);
+    db.entries = {};
+    (entries || []).forEach(e => { db.entries[e.entry_date] = e; });
+
+    const { data: trainings, error: e2 } = await sb.from('trainings').select('*').eq('user_id', session.user.id);
+    if(e2) console.error(e2);
+    db.trainings = {};
+    (trainings || []).forEach(t => {
+      if(!db.trainings[t.training_date]) db.trainings[t.training_date] = [];
+      db.trainings[t.training_date].push(t);
+    });
+  }
+
   function computeStreak(){
     let count = 0;
     let cursor = new Date();
     while(true){
       const key = fmtDate(cursor);
-      if(db.entries[key]){
-        count++;
-        cursor.setDate(cursor.getDate()-1);
-      } else {
-        break;
-      }
+      if(db.entries[key]){ count++; cursor.setDate(cursor.getDate()-1); } else { break; }
     }
     return count;
   }
@@ -152,9 +168,7 @@
 
   function renderCalendar(){
     document.getElementById('cal-month-label').textContent = `${MONTHS[calViewDate.getMonth()]} ${calViewDate.getFullYear()}`;
-
-    const wdRow = document.getElementById('cal-weekdays');
-    wdRow.innerHTML = WEEKDAYS.map(w => `<div class="text-center text-[10px] font-bold text-zinc-600 uppercase py-1">${w}</div>`).join('');
+    document.getElementById('cal-weekdays').innerHTML = WEEKDAYS.map(w => `<div class="text-center text-[10px] font-bold text-zinc-600 uppercase py-1">${w}</div>`).join('');
 
     const grid = document.getElementById('cal-grid');
     grid.innerHTML = '';
@@ -169,8 +183,7 @@
       grid.appendChild(empty);
     }
     for(let day=1; day<=daysInMonth; day++){
-      const dateObj = new Date(year, month, day);
-      const key = fmtDate(dateObj);
+      const key = fmtDate(new Date(year, month, day));
       const cell = document.createElement('a');
       const hasLog = !!(db.entries[key] || db.trainings[key]);
       let cls = 'day-cell relative h-10 rounded-lg flex items-center justify-center text-sm font-semibold text-zinc-300';
@@ -183,17 +196,16 @@
     }
   }
 
-  document.getElementById('cal-prev').addEventListener('click', ()=>{
-    calViewDate.setMonth(calViewDate.getMonth()-1);
-    renderCalendar();
-  });
-  document.getElementById('cal-next').addEventListener('click', ()=>{
-    calViewDate.setMonth(calViewDate.getMonth()+1);
-    renderCalendar();
-  });
+  document.getElementById('cal-prev').addEventListener('click', ()=>{ calViewDate.setMonth(calViewDate.getMonth()-1); renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', ()=>{ calViewDate.setMonth(calViewDate.getMonth()+1); renderCalendar(); });
+  document.getElementById('btn-signout').addEventListener('click', async ()=>{ await sb.auth.signOut(); window.location.href = 'login.html'; });
 
+  await loadData();
   renderStreak();
   renderCalendar();
+
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('hidden');
 })();
 </script>
 </body>
