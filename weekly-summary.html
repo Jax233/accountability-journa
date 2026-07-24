@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Weekly Summary — I SEE YOU & YOU ARE PERFECT</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="I SEE YOU">
+<meta name="theme-color" content="#000000">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  html, body { background:#000; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #000000; }
+  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+
+  .textarea-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
+  .textarea-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18), 0 0 18px rgba(220,38,38,0.25); }
+  .textarea-field::placeholder { color:#52525b; }
+
+  .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
+  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); }
+  .btn-primary:disabled { opacity:.6; }
+  .card { background:#0a0a0b; border:1px solid #18181b; }
+  .stat-card { background:#0a0a0b; border:1px solid #18181b; }
+
+  .day-row { border-bottom: 1px solid #18181b; }
+  .day-row:last-child { border-bottom: none; }
+  .day-row.no-log { opacity: .4; }
+
+  #loading-overlay { background:#000; }
+  .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-black text-zinc-100">
+<div class="max-w-md mx-auto min-h-screen bg-black flex flex-col relative border-x border-zinc-900">
+
+  <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="app-content" class="hidden flex-1 flex flex-col">
+    <div class="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-zinc-900 px-5 py-4 flex items-center gap-3">
+      <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-300 hover:text-red-500 transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div class="flex-1">
+        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Weekly Summary</p>
+        <h2 id="week-range-title" class="font-black italic uppercase text-base leading-tight"></h2>
+      </div>
+      <button id="week-prev" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-400 hover:text-red-500 transition">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button id="week-next" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-400 hover:text-red-500 transition">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div class="flex-1 px-5 py-5 space-y-5 pb-10">
+
+      <!-- Stat overview -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="stat-card rounded-xl p-4">
+          <p id="stat-days-logged" class="text-3xl font-black italic text-white">0/7</p>
+          <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">Days Logged</p>
+        </div>
+        <div class="stat-card rounded-xl p-4">
+          <p id="stat-sessions" class="text-3xl font-black italic text-white">0</p>
+          <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">Training Sessions</p>
+        </div>
+        <div class="stat-card rounded-xl p-4">
+          <p id="stat-rounds" class="text-3xl font-black italic text-red-500">0</p>
+          <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">Rounds Rolled</p>
+        </div>
+        <div class="stat-card rounded-xl p-4">
+          <p id="stat-objectives" class="text-3xl font-black italic text-white">0%</p>
+          <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">Objectives Hit</p>
+        </div>
+      </div>
+
+      <!-- Daily journal recap -->
+      <div class="card rounded-xl p-4">
+        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-3 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> This Week's Journal
+        </h3>
+        <div id="journal-recap"></div>
+      </div>
+
+      <!-- Training recap -->
+      <div class="card rounded-xl p-4">
+        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-3 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> This Week's Training
+        </h3>
+        <div id="training-recap" class="space-y-3"></div>
+      </div>
+
+      <!-- Weekly reflection -->
+      <div class="card rounded-xl p-4">
+        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-4 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Weekly Reflection
+        </h3>
+
+        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Biggest Win This Week</label>
+        <textarea id="w-win" rows="3" placeholder="What are you proud of?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+
+        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">What Held Me Back</label>
+        <textarea id="w-held-back" rows="3" placeholder="Be honest with yourself." class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+
+        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Focus For Next Week</label>
+        <textarea id="w-next-focus" rows="3" placeholder="One or two things to lock in on." class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+
+        <button id="btn-save-reflection" class="btn-primary w-full text-white font-black italic uppercase tracking-wide text-sm py-3.5 rounded-xl">
+          Save Reflection
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(async function(){
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const session = await requireSession();
+  if(!session) return;
+
+  function fmtDate(d){
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function parseDate(str){ const [y,m,d] = str.split('-').map(Number); return new Date(y, m-1, d); }
+  function getParam(name){ return new URLSearchParams(window.location.search).get(name); }
+
+  function startOfWeek(d){
+    const copy = new Date(d);
+    copy.setDate(copy.getDate() - copy.getDay()); // back up to Sunday
+    copy.setHours(0,0,0,0);
+    return copy;
+  }
+
+  const refParam = getParam('week');
+  let weekStart = startOfWeek(refParam ? parseDate(refParam) : new Date());
+
+  function weekEnd(ws){
+    const e = new Date(ws);
+    e.setDate(e.getDate() + 6);
+    return e;
+  }
+
+  function renderWeekLabel(){
+    const ws = weekStart, we = weekEnd(weekStart);
+    const sameMonth = ws.getMonth() === we.getMonth();
+    const label = sameMonth
+      ? `${MONTHS[ws.getMonth()]} ${ws.getDate()}–${we.getDate()}`
+      : `${MONTHS[ws.getMonth()]} ${ws.getDate()} – ${MONTHS[we.getMonth()]} ${we.getDate()}`;
+    document.getElementById('week-range-title').textContent = label;
+  }
+
+  async function loadWeek(){
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    document.getElementById('app-content').classList.add('hidden');
+
+    renderWeekLabel();
+    const ws = weekStart, we = weekEnd(weekStart);
+    const wsStr = fmtDate(ws), weStr = fmtDate(we);
+
+    const [{ data: entries, error: e1 }, { data: trainings, error: e2 }, { data: reflection, error: e3 }] = await Promise.all([
+      sb.from('entries').select('*').eq('user_id', session.user.id).gte('entry_date', wsStr).lte('entry_date', weStr),
+      sb.from('trainings').select('*').eq('user_id', session.user.id).gte('training_date', wsStr).lte('training_date', weStr),
+      sb.from('weekly_reflections').select('*').eq('user_id', session.user.id).eq('week_start', wsStr).maybeSingle()
+    ]);
+    if(e1) console.error(e1);
+    if(e2) console.error(e2);
+    if(e3) console.error(e3);
+
+    const entriesByDate = {};
+    (entries||[]).forEach(e => entriesByDate[e.entry_date] = e);
+
+    // ---- Stats ----
+    const daysLogged = Object.keys(entriesByDate).length;
+    document.getElementById('stat-days-logged').textContent = `${daysLogged}/7`;
+    document.getElementById('stat-sessions').textContent = (trainings||[]).length;
+    const totalRounds = (trainings||[]).reduce((sum,t) => sum + (t.rounds||0), 0);
+    document.getElementById('stat-rounds').textContent = totalRounds;
+
+    let objTotal = 0, objChecked = 0;
+    (entries||[]).forEach(e => {
+      const obj = e.objectives || {};
+      const keys = Object.keys(obj);
+      objTotal += keys.length;
+      objChecked += keys.filter(k => obj[k]).length;
+    });
+    document.getElementById('stat-objectives').textContent = objTotal ? `${Math.round(objChecked/objTotal*100)}%` : '—';
+
+    // ---- Journal recap ----
+    const journalEl = document.getElementById('journal-recap');
+    journalEl.innerHTML = '';
+    for(let i=0;i<7;i++){
+      const d = new Date(ws);
+      d.setDate(d.getDate()+i);
+      const key = fmtDate(d);
+      const entry = entriesByDate[key];
+      const row = document.createElement('a');
+      row.href = `daily-entry.html?date=${key}`;
+      row.className = 'day-row flex items-start gap-3 py-3' + (entry ? '' : ' no-log');
+      const snippet = entry ? (entry.goals || entry.brain_dump || 'Logged, no notes added.') : 'No entry logged.';
+      row.innerHTML = `
+        <div class="w-11 shrink-0 text-center">
+          <p class="text-[10px] text-zinc-500 uppercase font-bold">${DAYS_SHORT[i]}</p>
+          <p class="text-sm font-black italic ${entry ? 'text-red-500' : 'text-zinc-600'}">${d.getDate()}</p>
+        </div>
+        <p class="text-sm text-zinc-300 leading-snug pt-0.5 flex-1 line-clamp-2">${snippet.length > 90 ? snippet.slice(0,90)+'…' : snippet}</p>
+      `;
+      journalEl.appendChild(row);
+    }
+
+    // ---- Training recap ----
+    const trainingEl = document.getElementById('training-recap');
+    trainingEl.innerHTML = '';
+    if(!trainings || trainings.length === 0){
+      trainingEl.innerHTML = '<p class="text-sm text-zinc-500">No training logged this week.</p>';
+    } else {
+      const moodEmoji = { 'fired-up': '😃', 'neutral': '😐', 'wrecked': '😤' };
+      trainings.sort((a,b) => a.training_date.localeCompare(b.training_date)).forEach(t => {
+        const d = parseDate(t.training_date);
+        const card = document.createElement('div');
+        card.className = 'bg-black border border-zinc-800 rounded-lg p-3';
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <p class="text-xs font-black italic uppercase text-red-500">${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}</p>
+            <div class="flex items-center gap-2 text-xs text-zinc-400">
+              ${t.mood ? `<span>${moodEmoji[t.mood]||''}</span>` : ''}
+              <span>${t.rounds||0} rounds</span>
+            </div>
+          </div>
+          <p class="text-sm text-white font-semibold">${t.class_attended || 'Training session'}</p>
+          ${t.focus ? `<p class="text-xs text-zinc-400 mt-0.5">Focus: ${t.focus}</p>` : ''}
+        `;
+        trainingEl.appendChild(card);
+      });
+    }
+
+    // ---- Reflection fields ----
+    document.getElementById('w-win').value = reflection?.biggest_win || '';
+    document.getElementById('w-held-back').value = reflection?.held_back || '';
+    document.getElementById('w-next-focus').value = reflection?.next_focus || '';
+
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('app-content').classList.remove('hidden');
+  }
+
+  document.getElementById('week-prev').addEventListener('click', ()=>{
+    weekStart.setDate(weekStart.getDate()-7);
+    weekStart = new Date(weekStart);
+    loadWeek();
+  });
+  document.getElementById('week-next').addEventListener('click', ()=>{
+    weekStart.setDate(weekStart.getDate()+7);
+    weekStart = new Date(weekStart);
+    loadWeek();
+  });
+
+  document.getElementById('btn-save-reflection').addEventListener('click', async ()=>{
+    const btn = document.getElementById('btn-save-reflection');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const payload = {
+      user_id: session.user.id,
+      week_start: fmtDate(weekStart),
+      biggest_win: document.getElementById('w-win').value,
+      held_back: document.getElementById('w-held-back').value,
+      next_focus: document.getElementById('w-next-focus').value,
+      saved_at: new Date().toISOString()
+    };
+    const { error } = await sb.from('weekly_reflections').upsert(payload, { onConflict: 'user_id,week_start' });
+    btn.disabled = false;
+    btn.textContent = 'Save Reflection';
+    if(error){
+      console.error(error);
+      alert('Could not save — check your connection and try again.');
+      return;
+    }
+    btn.textContent = 'Saved ✓';
+    setTimeout(()=>{ btn.textContent = 'Save Reflection'; }, 1500);
+  });
+
+  await loadWeek();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>I SEE YOU & YOU ARE PERFECT</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="I SEE YOU">
+<meta name="theme-color" content="#000000">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  html, body { background:#000; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #000000; }
+  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+
+  .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
+  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); transform: translateY(-1px); }
+  .btn-ghost { border:1.5px solid #dc2626; color:#f87171; background: rgba(220,38,38,0.04); transition: all .18s ease; }
+  .btn-ghost:hover { background: rgba(220,38,38,0.12); box-shadow: 0 0 20px rgba(220,38,38,0.25); }
+  .card { background:#0a0a0b; border:1px solid #18181b; }
+
+  .day-cell { transition: all .15s ease; }
+  .day-cell:hover:not(.day-empty) { background:#18181b; }
+  .day-cell.has-log::after {
+    content:''; position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+    width:5px; height:5px; border-radius:50%; background:#dc2626; box-shadow:0 0 6px rgba(220,38,38,0.8);
+  }
+  .day-cell.is-today { box-shadow: inset 0 0 0 1.5px #dc2626; }
+
+  .stripe { transition: all .25s ease; }
+  .stripe.filled { background:#dc2626; box-shadow: 0 0 8px rgba(220,38,38,0.7); }
+  .stripe.empty { background:#27272a; }
+
+  #loading-overlay { background:#000; }
+  .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-black text-zinc-100">
+<div class="max-w-md mx-auto min-h-screen bg-black flex flex-col relative border-x border-zinc-900">
+
+  <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="app-content" class="flex-1 overflow-y-auto hidden">
+    <div class="px-5 pt-8 pb-4 flex items-start justify-between">
+      <div>
+        <p class="text-red-600 text-[11px] font-bold tracking-[0.3em] uppercase mb-1">Discipline Over Comfort</p>
+        <h1 class="text-2xl font-black italic uppercase tracking-tight leading-none">I See You &amp;<br>You Are Perfect</h1>
+      </div>
+      <button id="btn-signout" class="text-zinc-500 hover:text-red-500 text-[10px] font-bold uppercase tracking-wide mt-2 transition">Sign Out</button>
+    </div>
+
+    <!-- Streak Banner -->
+    <div class="mx-5 mb-5 card rounded-xl p-5 relative overflow-hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="flex items-baseline gap-2">
+            <span id="streak-number" class="text-5xl font-black italic text-white">0</span>
+            <span class="text-red-600 text-xl">🔥</span>
+          </div>
+          <p id="streak-label" class="text-zinc-400 text-xs font-semibold uppercase tracking-wide mt-1">Days of Radical Accountability</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Belt Cycle</p>
+          <p id="belt-cycle" class="text-lg font-black italic text-red-500">01</p>
+        </div>
+      </div>
+      <div class="bg-black rounded-lg border border-zinc-800 px-4 py-3">
+        <div class="flex items-center gap-2">
+          <div class="flex-1 h-2.5 bg-zinc-900 rounded-full"></div>
+          <div id="stripe-container" class="flex gap-1.5"></div>
+        </div>
+        <p class="text-[9px] text-zinc-600 uppercase tracking-[0.2em] font-bold mt-2">Stripe earned every logged day · resets every 4</p>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="mx-5 mb-5 card rounded-xl p-4">
+      <div class="flex items-center justify-between mb-4">
+        <button id="cal-prev" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-400 hover:text-red-500 transition">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h2 id="cal-month-label" class="font-black italic uppercase text-sm tracking-wide"></h2>
+        <button id="cal-next" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-400 hover:text-red-500 transition">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div id="cal-weekdays" class="grid grid-cols-7 gap-1 mb-2"></div>
+      <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="px-5 pb-4 space-y-3">
+      <a href="daily-entry.html" class="btn-primary block text-center w-full text-white font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
+        + Log Daily Entry
+      </a>
+      <a href="training-log.html" class="btn-ghost block text-center w-full font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
+        + Log Training
+      </a>
+    </div>
+    <div class="px-5 pb-10 text-center">
+      <a href="weekly-summary.html" class="text-zinc-400 hover:text-red-500 text-xs font-bold uppercase tracking-widest transition">
+        View Weekly Summary →
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(async function(){
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const WEEKDAYS = ['S','M','T','W','T','F','S'];
+
+  const session = await requireSession();
+  if(!session) return;
+
+  let db = { entries: {}, trainings: {} };
+  let calViewDate = new Date();
+
+  function fmtDate(d){
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function todayStr(){ return fmtDate(new Date()); }
+
+  async function loadData(){
+    const { data: entries, error: e1 } = await sb.from('entries').select('*').eq('user_id', session.user.id);
+    if(e1) console.error(e1);
+    db.entries = {};
+    (entries || []).forEach(e => { db.entries[e.entry_date] = e; });
+
+    const { data: trainings, error: e2 } = await sb.from('trainings').select('*').eq('user_id', session.user.id);
+    if(e2) console.error(e2);
+    db.trainings = {};
+    (trainings || []).forEach(t => {
+      if(!db.trainings[t.training_date]) db.trainings[t.training_date] = [];
+      db.trainings[t.training_date].push(t);
+    });
+  }
+
+  function computeStreak(){
+    let count = 0;
+    let cursor = new Date();
+    while(true){
+      const key = fmtDate(cursor);
+      if(db.entries[key]){ count++; cursor.setDate(cursor.getDate()-1); } else { break; }
+    }
+    return count;
+  }
+
+  function renderStreak(){
+    const streak = computeStreak();
+    document.getElementById('streak-number').textContent = streak;
+    document.getElementById('streak-label').textContent = streak === 1 ? 'Day of Discipline' : 'Days of Discipline';
+    const cycle = Math.floor(streak / 4) + 1;
+    document.getElementById('belt-cycle').textContent = String(cycle).padStart(2,'0');
+    const stripesFilled = streak === 0 ? 0 : (streak % 4 === 0 ? 4 : streak % 4);
+    const container = document.getElementById('stripe-container');
+    container.innerHTML = '';
+    for(let i=0;i<4;i++){
+      const s = document.createElement('div');
+      s.className = 'stripe w-2 h-6 rounded-sm ' + (i < stripesFilled ? 'filled' : 'empty');
+      container.appendChild(s);
+    }
+  }
+
+  function renderCalendar(){
+    document.getElementById('cal-month-label').textContent = `${MONTHS[calViewDate.getMonth()]} ${calViewDate.getFullYear()}`;
+    document.getElementById('cal-weekdays').innerHTML = WEEKDAYS.map(w => `<div class="text-center text-[10px] font-bold text-zinc-600 uppercase py-1">${w}</div>`).join('');
+
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    const year = calViewDate.getFullYear(), month = calViewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const today = todayStr();
+
+    for(let i=0;i<firstDay;i++){
+      const empty = document.createElement('div');
+      empty.className = 'day-empty';
+      grid.appendChild(empty);
+    }
+    for(let day=1; day<=daysInMonth; day++){
+      const key = fmtDate(new Date(year, month, day));
+      const cell = document.createElement('a');
+      const hasLog = !!(db.entries[key] || db.trainings[key]);
+      let cls = 'day-cell relative h-10 rounded-lg flex items-center justify-center text-sm font-semibold text-zinc-300';
+      if(hasLog) cls += ' has-log';
+      if(key === today) cls += ' is-today text-white';
+      cell.className = cls;
+      cell.textContent = day;
+      cell.href = `daily-entry.html?date=${key}`;
+      grid.appendChild(cell);
+    }
+  }
+
+  document.getElementById('cal-prev').addEventListener('click', ()=>{ calViewDate.setMonth(calViewDate.getMonth()-1); renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', ()=>{ calViewDate.setMonth(calViewDate.getMonth()+1); renderCalendar(); });
+  document.getElementById('btn-signout').addEventListener('click', async ()=>{ await sb.auth.signOut(); window.location.href = 'login.html'; });
+
+  await loadData();
+  renderStreak();
+  renderCalendar();
+
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
