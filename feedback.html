@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Feedback — I SEE YOU & YOU ARE PERFECT</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="I SEE YOU">
+<meta name="theme-color" content="#000000">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  html, body { background:#000; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #000000; }
+  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
+
+  .textarea-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
+  .textarea-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18), 0 0 18px rgba(220,38,38,0.25); }
+  .textarea-field::placeholder { color:#52525b; }
+
+  .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
+  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); }
+  .btn-primary:disabled { opacity:.6; }
+  .card { background:#0a0a0b; border:1px solid #18181b; }
+
+  #loading-overlay { background:#000; }
+  .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-black text-zinc-100">
+<div class="max-w-md mx-auto min-h-screen bg-black flex flex-col relative border-x border-zinc-900">
+
+  <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="app-content" class="hidden flex-1 flex flex-col">
+    <div class="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-zinc-900 px-5 py-4 flex items-center gap-3">
+      <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-300 hover:text-red-500 transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div class="flex-1">
+        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Help Us Improve</p>
+        <h2 class="font-black italic uppercase text-base leading-tight">Send Feedback</h2>
+      </div>
+      <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
+    </div>
+
+    <div class="flex-1 px-5 py-5 space-y-5 pb-10">
+      <div class="card rounded-xl p-4">
+        <p class="text-sm text-zinc-400 mb-4">Bugs, ideas, things that annoyed you, things you love — all of it helps.</p>
+        <textarea id="feedback-message" rows="5" placeholder="What's on your mind?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+        <button id="btn-submit-feedback" class="btn-primary w-full text-white font-black italic uppercase tracking-wide text-sm py-3.5 rounded-xl">
+          Submit Feedback
+        </button>
+        <p id="feedback-status" class="text-center text-xs font-semibold mt-3 hidden"></p>
+      </div>
+
+      <div id="past-feedback-section" class="hidden">
+        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-3 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Your Previous Feedback
+        </h3>
+        <div id="past-feedback-list" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(async function(){
+  const session = await requireSession();
+  if(!session) return;
+
+  async function loadPastFeedback(){
+    const { data, error } = await sb
+      .from('feedback')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+    if(error){ console.error(error); return; }
+    if(data && data.length){
+      const section = document.getElementById('past-feedback-section');
+      const list = document.getElementById('past-feedback-list');
+      list.innerHTML = '';
+      data.forEach(f => {
+        const d = new Date(f.created_at);
+        const item = document.createElement('div');
+        item.className = 'card rounded-lg p-3';
+        item.innerHTML = `
+          <p class="text-[10px] text-zinc-500 uppercase font-bold mb-1">${d.toLocaleDateString()}</p>
+          <p class="text-sm text-zinc-300">${f.message}</p>
+        `;
+        list.appendChild(item);
+      });
+      section.classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('btn-submit-feedback').addEventListener('click', async ()=>{
+    const btn = document.getElementById('btn-submit-feedback');
+    const statusEl = document.getElementById('feedback-status');
+    const textarea = document.getElementById('feedback-message');
+    const message = textarea.value.trim();
+
+    if(!message){
+      statusEl.textContent = 'Write something first.';
+      statusEl.className = 'text-center text-xs font-semibold mt-3 text-red-500';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const { error } = await sb.from('feedback').insert({
+      user_id: session.user.id,
+      message
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Submit Feedback';
+
+    if(error){
+      console.error(error);
+      statusEl.textContent = 'Could not send — try again.';
+      statusEl.className = 'text-center text-xs font-semibold mt-3 text-red-500';
+      return;
+    }
+
+    statusEl.textContent = 'Thank you — feedback sent.';
+    statusEl.className = 'text-center text-xs font-semibold mt-3 text-green-500';
+    textarea.value = '';
+    await loadPastFeedback();
+  });
+
+  await loadPastFeedback();
+
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.getElementById('app-content').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
