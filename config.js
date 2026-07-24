@@ -1,4 +1,3 @@
-javascript
 // ====== FILL THESE IN FROM YOUR SUPABASE PROJECT ======
 // Dashboard → Project Settings → API
 const SUPABASE_URL = 'https://efbsorwhkphgwbosbzgz.supabase.co';
