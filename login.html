@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sign In — I SEE YOU & YOU ARE PERFECT</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="I SEE YOU">
+<meta name="theme-color" content="#000000">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  html, body { background:#000; }
+  .input-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
+  .input-field:focus { outline:none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18), 0 0 18px rgba(220,38,38,0.25); }
+  .input-field::placeholder { color:#52525b; }
+  .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
+  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); }
+  .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+  .card { background:#0a0a0b; border:1px solid #18181b; }
+</style>
+</head>
+<body class="bg-black text-zinc-100">
+<div class="max-w-md mx-auto min-h-screen bg-black flex flex-col justify-center px-6 border-x border-zinc-900">
+
+  <div class="mb-8 text-center">
+    <img src="logo-bird-only.png" alt="I See You & You Are Perfect" class="h-20 w-auto mx-auto mb-4">
+    <p class="text-red-600 text-[11px] font-bold tracking-[0.3em] uppercase mb-2">Discipline Over Comfort</p>
+    <h1 class="text-2xl font-black italic uppercase tracking-tight leading-none">I See You &amp;<br>You Are Perfect</h1>
+  </div>
+
+  <div class="card rounded-xl p-5">
+    <div id="form-state">
+      <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Email</label>
+      <input id="email-input" type="email" placeholder="you@example.com" class="input-field w-full rounded-lg px-3.5 py-3 text-sm mb-4">
+      <button id="btn-send-link" class="btn-primary w-full text-white font-black italic uppercase tracking-wide text-sm py-3.5 rounded-xl">
+        Send Magic Link
+      </button>
+      <p id="error-msg" class="text-red-500 text-xs font-semibold mt-3 hidden"></p>
+    </div>
+
+    <div id="sent-state" class="hidden text-center py-4">
+      <p class="text-4xl mb-3">📬</p>
+      <p class="font-black italic uppercase text-sm mb-1">Check your email</p>
+      <p class="text-zinc-400 text-xs">Tap the link we sent to sign in. No password needed.</p>
+    </div>
+  </div>
+
+  <p class="text-center text-zinc-600 text-[11px] mt-6">First time here? The same link creates your account.</p>
+</div>
+
+<script src="config.js"></script>
+<script>
+(async function(){
+  // If already signed in, skip straight to the app
+  const { data: { session } } = await sb.auth.getSession();
+  if(session){ window.location.href = 'index.html'; return; }
+
+  const btn = document.getElementById('btn-send-link');
+  const emailInput = document.getElementById('email-input');
+  const errorMsg = document.getElementById('error-msg');
+
+  btn.addEventListener('click', async ()=>{
+    const email = emailInput.value.trim();
+    if(!email){
+      errorMsg.textContent = 'Enter your email first.';
+      errorMsg.classList.remove('hidden');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + window.location.pathname.replace('login.html','index.html') }
+    });
+    if(error){
+      errorMsg.textContent = error.message;
+      errorMsg.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Send Magic Link';
+      return;
+    }
+    document.getElementById('form-state').classList.add('hidden');
+    document.getElementById('sent-state').classList.remove('hidden');
+  });
+})();
+</script>
+</body>
+</html>
