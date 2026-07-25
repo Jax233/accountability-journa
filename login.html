@@ -77,16 +77,17 @@
     btn.disabled = true;
     btn.textContent = 'Sending...';
     const { error } = await sb.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin + window.location.pathname.replace('login.html','index.html') }
-    });
-    if(error){
-      errorMsg.textContent = error.message;
-      errorMsg.classList.remove('hidden');
-      btn.disabled = false;
-      btn.textContent = 'Send Magic Link';
-      return;
-    }
+      email: userEmail,
+  options: {
+    shouldCreateUser: false // This blocks anyone not pre-added in Supabase
+  }
+});
+
+if (error) {
+  alert("Access denied. This email is not authorized for the trial.");
+} else {
+  alert("Check your email for the magic link!");
+}
     document.getElementById('form-state').classList.add('hidden');
     document.getElementById('sent-state').classList.remove('hidden');
   });
