@@ -105,8 +105,9 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
+        <p id="drawer-parent-pos" class="text-[10px] font-black uppercase tracking-widest text-red-600 mb-0.5"></p>
         <div class="flex items-center gap-2 mb-1">
-          <p id="drawer-category" class="text-[9px] text-red-500 font-extrabold uppercase tracking-[0.2em]"></p>
+          <p id="drawer-category" class="text-[9px] text-zinc-400 font-extrabold uppercase tracking-[0.2em]"></p>
           <span id="drawer-heat-badge" class="hidden text-[9px] bg-red-950 text-red-400 border border-red-800 font-bold px-2 py-0.5 rounded-full"></span>
         </div>
         <h3 id="drawer-title" class="text-base font-black italic uppercase text-white pr-6 mb-2 leading-tight"></h3>
@@ -164,9 +165,9 @@
 
   const nodeData = [
     // 1. OPEN GUARD
-    { id: 'og', label: '1. OPEN GUARD', x: 0, y: 0, category: 'Primary Position', desc: 'Background Process: The fight for inside leg space. The player who controls the inside space dictates whether guard is retained, swept, or passed.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
-    { id: 'og_top', label: 'TOP (Passing / Standing)', x: -200, y: 100, category: 'Guard Passing', desc: 'Background Process: Deny inside leg connections. Strip foot grips, step into or around inside space, and force bottom player flat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
-    { id: 'og_bot', label: 'BOTTOM (Guard Playing)', x: 220, y: 100, category: 'Guard Playing', desc: 'Background Process: Win inside leg position. Place feet on hips/biceps to off balance (Kuzushi) and force top player to post hands on the mat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...styleSubRole },
+    { id: 'og', label: '1. OPEN GUARD', x: 0, y: 0, category: 'Primary Position', desc: 'Background Process: The fight for inside leg space. Dictate whether guard is retained, swept, or passed.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
+    { id: 'og_top', label: 'TOP (Passing / Standing)', x: -200, y: 100, category: 'Guard Passing', desc: 'Background Process: Deny inside leg connections. Strip foot grips, step around inside space, and force bottom player flat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
+    { id: 'og_bot', label: 'BOTTOM (Guard Playing)', x: 220, y: 100, category: 'Guard Playing', desc: 'Background Process: Win inside leg position. Place feet on hips/biceps to off balance (Kuzushi) and force top player hands to the mat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...styleSubRole },
     { id: 'og_top_torreando', label: 'Torreando / Bullfighter Pass', x: -300, y: 200, category: 'Top Pass', desc: 'Deny inside leg connection by gripping pant cuffs, pushing legs laterally, and occupying inside chest-to-hip space.', yt: 'https://www.youtube.com/results?search_query=bjj+torreando+pass+tutorial', ...styleTransition },
     { id: 'og_top_kneecut', label: 'Knee Cut / Slice Pass', x: -110, y: 200, category: 'Top Pass', desc: 'Drive knee through inside leg space while establishing an underhook to win inside arm space before passing.', yt: 'https://www.youtube.com/results?search_query=bjj+knee+cut+pass+tutorial', ...styleTransition },
     { id: 'og_bot_dlr', label: 'De La Riva Guard', x: 70, y: 200, category: 'Bottom Guard', desc: 'Use outside hook behind ankle to establish inside control of passer far leg, breaking posture and setting up sweeps.', yt: 'https://www.youtube.com/results?search_query=bjj+de+la+riva+guard+sweeps', ...styleTransition },
@@ -188,7 +189,7 @@
 
     // 3. SIDE CONTROL
     { id: 'sc', label: '3. SIDE CONTROL', x: 0, y: 700, category: 'Primary Position', desc: 'Background Process: The fight for inside arm space. Top player needs underhooks/cross-face; bottom player needs frames.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
-    { id: 'sc_top', label: 'TOP (Dominant Pin)', x: -200, y: 800, category: 'Top Offense', desc: 'Background Process: Drive arms, chest, or head inside defender arms (underhook/cross-face) to flatten shoulders and eliminate escape routes.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
+    { id: 'sc_top', label: 'TOP (Dominant Pin)', x: -200, y: 800, category: 'Top Offense', desc: 'Background Process: Drive arms, chest, or head inside defender arms (underhook/cross-face) to flatten shoulders.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
     { id: 'sc_bot', label: 'BOTTOM (Pinned Defender)', x: 200, y: 800, category: 'Bottom Defense', desc: 'Background Process: Deny inside arm space. Keep elbows glued to ribs, frame across neck/hip, and avoid giving up underhooks.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
     { id: 'sc_top_papercutter', label: 'Paper Cutter Choke', x: -320, y: 900, category: 'Top Submission', desc: 'Work inside lapel grip and drop forearm across throat line while maintaining heavy cross-body pressure.', yt: 'https://www.youtube.com/results?search_query=bjj+paper+cutter+choke+side+control', ...styleSubmission },
     { id: 'sc_top_armtriangle', label: 'Arm Triangle (Head & Arm)', x: -200, y: 900, category: 'Top Submission', desc: 'Trap defender arm across their neck line, sliding into inside position to choke with shoulder pressure.', yt: 'https://www.youtube.com/results?search_query=bjj+arm+triangle+from+side+control+finish', ...styleSubmission },
@@ -207,16 +208,16 @@
     { id: 'm_bot_upa', label: 'Upa / Bridge & Roll Escape', x: 260, y: 1250, category: 'Bottom Escape', desc: 'Trap top player arm and same-side foot line, bridging diagonally to reverse position.', yt: 'https://www.youtube.com/results?search_query=bjj+upa+escape+mount+tutorial', ...styleTransition },
 
     // 5. BACK CONTROL
-    { id: 'bc', label: '5. BACK CONTROL', x: 0, y: 1400, category: 'Primary Position', desc: 'Background Process: Attacker fights to control chest-to-back inside space and neck line; defender clear hooks.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
-    { id: 'bc_top', label: 'TOP / REAR ATTACKER', x: -200, y: 1500, category: 'Rear Offense', desc: 'Background Process: Maintain seatbelt control, trap defending wrist inside legs, and control chin line.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
+    { id: 'bc', label: '5. BACK CONTROL', x: 0, y: 1400, category: 'Primary Position', desc: 'Background Process: Attacker fights to control chest-to-back inside space and choke line; defender clear hooks.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
+    { id: 'bc_top', label: 'TOP / REAR ATTACKER', x: -200, y: 1500, category: 'Rear Offense', desc: 'Background Process: Control chest-to-back connection, trap defending hand inside legs, and isolate chin line.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
     { id: 'bc_bot', label: 'BOTTOM / DEFENDER', x: 200, y: 1500, category: 'Rear Defense', desc: 'Background Process: Deny choke arm inside space, protect collar grips, and slide shoulders flat to mat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
     { id: 'bc_top_rnc', label: 'Rear Naked Choke (RNC)', x: -320, y: 1600, category: 'Rear Submission', desc: 'Slide choking arm deep inside under chin, lock biceps grip behind head, and compress chest.', yt: 'https://www.youtube.com/results?search_query=bjj+rear+naked+choke+finish+details', ...styleSubmission },
     { id: 'bc_top_bowandarrow', label: 'Bow & Arrow Choke', x: -200, y: 1600, category: 'Rear Submission', desc: 'Grip inside collar, grab far pant cuff, and rotate perpendicular to apply leverage against neck.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke+finish', ...styleSubmission },
     { id: 'bc_top_straightjacket', label: 'Straight Jacket Trap', x: -80, y: 1600, category: 'Rear Attack', desc: 'Use leg hook to trap defender defending hand inside, isolating neck for an undefended choke.', yt: 'https://www.youtube.com/results?search_query=bjj+straight+jacket+back+system+tutorial', ...styleTransition },
     { id: 'bc_bot_scapulaescape', label: 'Shoulder-to-Mat Escape', x: 160, y: 1600, category: 'Rear Escape', desc: 'Control choking wrist, clear top hook, and slide hips sideways to get shoulders flat on the mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escape+shoulders+to+mat', ...styleTransition }
-  ];
+  ]);
 
-  const edges = new vis.DataSet([
+  const edgeData = [
     { from: 'og', to: 'og_top' }, { from: 'og', to: 'og_bot' },
     { from: 'og_top', to: 'og_top_torreando' }, { from: 'og_top', to: 'og_top_kneecut' },
     { from: 'og_bot', to: 'og_bot_dlr' }, { from: 'og_bot', to: 'og_bot_spider' }, { from: 'og_bot', to: 'og_bot_slx' }, { from: 'og_bot', to: 'og_bot_tripod' },
@@ -232,9 +233,10 @@
     { from: 'bc', to: 'bc_top' }, { from: 'bc', to: 'bc_bot' },
     { from: 'bc_top', to: 'bc_top_rnc' }, { from: 'bc_top', to: 'bc_top_bowandarrow' }, { from: 'bc_top', to: 'bc_top_straightjacket' },
     { from: 'bc_bot', to: 'bc_bot_scapulaescape' }
-  ]);
+  ];
 
   const nodes = new vis.DataSet(nodeData);
+  const edges = new vis.DataSet(edgeData);
   const container = document.getElementById('network-container');
   const data = { nodes: nodes, edges: edges };
 
@@ -251,7 +253,21 @@
 
   const network = new vis.Network(container, data, options);
 
-  // OPTION 2: Fetch Supabase trainings to calculate user's personal heatmap
+  // Trace root primary position (e.g. 5. BACK CONTROL)
+  function getPrimaryAncestor(nodeId) {
+    let current = nodeId;
+    while (current) {
+      const item = nodeData.find(n => n.id === current);
+      if (item && item.category === 'Primary Position') {
+        return item.label;
+      }
+      const parentEdge = edgeData.find(e => e.to === current);
+      current = parentEdge ? parentEdge.from : null;
+    }
+    return '';
+  }
+
+  // Heatmap tracking
   let loggedCounts = {};
   try {
     const session = await sb.auth.getSession();
@@ -268,16 +284,11 @@
         }
       });
 
-      // Highlight logged nodes on the flow map
       Object.keys(loggedCounts).forEach(nid => {
         const count = loggedCounts[nid];
         const existing = nodes.get(nid);
         if(existing){
-          nodes.update({
-            id: nid,
-            borderWidth: 2,
-            color: { border: '#eab308' } // Gold border for trained techniques
-          });
+          nodes.update({ id: nid, borderWidth: 2, color: { border: '#eab308' } });
         }
       });
     }
@@ -286,6 +297,7 @@
   // Drawer elements
   const legendBar = document.getElementById('legend-bar');
   const detailDrawer = document.getElementById('detail-drawer');
+  const drawerParentPos = document.getElementById('drawer-parent-pos');
   const drawerCategory = document.getElementById('drawer-category');
   const drawerHeatBadge = document.getElementById('drawer-heat-badge');
   const drawerTitle = document.getElementById('drawer-title');
@@ -294,21 +306,24 @@
   const drawerLogBtn = document.getElementById('drawer-log-btn');
   const btnCloseDrawer = document.getElementById('btn-close-drawer');
 
-  // Handle tap on nodes
+  // Node tap handler
   network.on('click', (params) => {
     if(params.nodes.length > 0){
       const nodeId = params.nodes[0];
       const item = nodes.get(nodeId);
       
       if(item){
+        const primaryPosLabel = getPrimaryAncestor(nodeId);
+        
+        drawerParentPos.textContent = primaryPosLabel ? `Position: ${primaryPosLabel}` : '';
         drawerCategory.textContent = item.category || 'Technique Detail';
         drawerTitle.textContent = item.label;
         drawerDesc.textContent = item.desc || 'Tactical position or submission.';
         
-        // OPTION 1: Auto-link to training log
-        drawerLogBtn.href = `training-log.html?focus=${encodeURIComponent(item.label)}`;
+        // Pass Primary Position, Focus Label, and Concept
+        drawerLogBtn.href = `training-log.html?focus=${encodeURIComponent(item.label)}&concept=${encodeURIComponent(item.desc)}&primary=${encodeURIComponent(primaryPosLabel)}`;
 
-        // OPTION 2: Show logging frequency badge
+        // Heatmap count
         const count = loggedCounts[nodeId] || 0;
         if(count > 0){
           drawerHeatBadge.textContent = `🔥 Logged ${count}x`;
