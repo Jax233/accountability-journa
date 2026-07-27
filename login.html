@@ -80,7 +80,7 @@
     btn.disabled = true;
     btn.textContent = 'Sending...';
 
-    // Call Supabase using your 'sb' client object
+    // Send magic link using the 'sb' Supabase client instance
     const { data, error } = await sb.auth.signInWithOtp({
       email: userEmail,
       options: {
@@ -101,5 +101,3 @@
   });
 })();
 </script>
-</body>
-</html>
