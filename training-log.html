@@ -6,7 +6,7 @@
 <title>Training Log — I SEE YOU & YOU ARE PERFECT</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="I SEE YOU">
 <meta name="theme-color" content="#000000">
@@ -99,7 +99,7 @@
         </div>
 
         <label id="learned-question-label" class="block text-[11px] font-bold uppercase tracking-wide text-zinc-400 mb-1.5">What Did You Learn?</label>
-        <textarea id="t-learned" rows="3" placeholder="How did the background process affect your rolls today?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+        <textarea id="t-learned" rows="3" placeholder="What worked, what felt difficult, and what adjustments do you need to make?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
 
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Follow-Up Questions</label>
         <textarea id="t-questions" rows="3" placeholder="What do you need to ask your coach?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none"></textarea>
@@ -158,14 +158,14 @@
 
   document.getElementById('training-date-title').textContent = humanDate(selectedDate);
 
-  // Auto-populate Technique Focus with Primary Position context
+  // Populate Technique Focus with Primary Position context
   if (autoFocusTechnique) {
     const focusVal = decodeURIComponent(autoFocusTechnique);
     const primVal = autoPrimaryPos ? decodeURIComponent(autoPrimaryPos) : '';
     document.getElementById('t-focus').value = primVal ? `${primVal} → ${focusVal}` : focusVal;
   }
 
-  // Build specific, concept-driven reflection question
+  // Reframed concept reflection prompt (learning/adaptation focused)
   if (autoConcept) {
     const rawConcept = decodeURIComponent(autoConcept);
     const cleanProcess = rawConcept.replace(/^Background Process:\s*/i, '');
@@ -177,12 +177,12 @@
     document.getElementById('primary-pos-badge').textContent = `${primText} ${techText ? '• ' + techText : ''}`;
     document.getElementById('concept-context-text').textContent = cleanProcess;
 
-    // Build specific prompt
+    // Growth-focused question and placeholder
     const questionLabel = document.getElementById('learned-question-label');
     const learnedInput = document.getElementById('t-learned');
 
-    questionLabel.textContent = `Mechanical Focus Question`;
-    learnedInput.placeholder = `Did you win or lose this fight? (Focus: ${cleanProcess})`;
+    questionLabel.textContent = `Concept & Execution Reflection`;
+    learnedInput.placeholder = `How did focusing on this concept affect your exchanges today? What adjustments did you notice or need to make?`;
   }
 
   const { data: sessions, error } = await sb
