@@ -156,7 +156,7 @@
 
   const nodes = new vis.DataSet([
     // ==========================================
-    // 1. OPEN GUARD
+    // 1. OPEN GUARD (LEVEL 0 -> 1 -> 2)
     // ==========================================
     { id: 'og', label: '1. OPEN GUARD', level: 0, category: 'Primary Position', desc: 'Background Process: The fight for inside leg space. The player who controls the inside space dictates whether guard is retained, swept, or passed.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
     { id: 'og_top', label: 'TOP (Passing / Standing)', level: 1, category: 'Guard Passing', desc: 'Background Process: Deny inside leg connections. Strip foot grips, step into or around inside space, and force bottom player flat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
@@ -169,7 +169,7 @@
     { id: 'og_bot_tripod', label: 'Tripod Sweep', level: 2, category: 'Bottom Sweep', desc: 'Combine inside foot-on-hip push with outside ankle hook to off balance (Kuzushi) passer onto their back.', yt: 'https://www.youtube.com/results?search_query=bjj+tripod+sweep+tutorial', ...styleTransition },
 
     // ==========================================
-    // 2. CLOSED GUARD
+    // 2. CLOSED GUARD (LEVEL 3 -> 4 -> 5)
     // ==========================================
     { id: 'cg', label: '2. CLOSED GUARD', level: 3, category: 'Primary Position', desc: 'Background Process: Controlling top player posture and hips with locked leg enclosure.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
     { id: 'cg_top', label: 'TOP (Inside Guard)', level: 4, category: 'Top Defense', desc: 'Background Process: Maintain vertical posture, keep elbows inside knees to prevent arm control, and open ankle lock.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
@@ -183,7 +183,7 @@
     { id: 'cg_bot_hipheist', label: 'Hip Heist / Flower Sweep', level: 5, category: 'Bottom Sweep', desc: 'Off balance (Kuzushi) top player by controlling arm/sleeve line and pivoting hip momentum under center of gravity.', yt: 'https://www.youtube.com/results?search_query=bjj+flower+sweep+closed+guard', ...styleTransition },
 
     // ==========================================
-    // 3. SIDE CONTROL
+    // 3. SIDE CONTROL (LEVEL 6 -> 7 -> 8)
     // ==========================================
     { id: 'sc', label: '3. SIDE CONTROL', level: 6, category: 'Primary Position', desc: 'Background Process: The fight for inside arm space. Top player needs underhooks/cross-face; bottom player needs frames.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
     { id: 'sc_top', label: 'TOP (Dominant Pin)', level: 7, category: 'Top Offense', desc: 'Background Process: Drive arms, chest, or head inside defender arms (underhook/cross-face) to flatten shoulders and eliminate escape routes.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
@@ -195,7 +195,7 @@
     { id: 'sc_bot_underhook', label: 'Underhook to Dogbar / Single', level: 8, category: 'Bottom Escape', desc: 'Pummel arm inside to gain underhook, coming up to knees to reverse top/bottom dynamic.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+underhook+escape+tutorial', ...styleTransition },
 
     // ==========================================
-    // 4. MOUNT
+    // 4. MOUNT (LEVEL 9 -> 10 -> 11)
     // ==========================================
     { id: 'm', label: '4. MOUNT', level: 9, category: 'Primary Position', desc: 'Background Process: Top player walks knees high inside defender armpits; bottom player protects neck and hip space.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
     { id: 'm_top', label: 'TOP (Mount Attacker)', level: 10, category: 'Top Offense', desc: 'Background Process: Walk knees up to win inside armpit space, isolating elbows away from ribs to set up submissions.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
@@ -207,7 +207,7 @@
     { id: 'm_bot_upa', label: 'Upa / Bridge & Roll Escape', level: 11, category: 'Bottom Escape', desc: 'Trap top player arm and same-side foot line, bridging diagonally to reverse position.', yt: 'https://www.youtube.com/results?search_query=bjj+upa+escape+mount+tutorial', ...styleTransition },
 
     // ==========================================
-    // 5. BACK CONTROL
+    // 5. BACK CONTROL (LEVEL 12 -> 13 -> 14)
     // ==========================================
     { id: 'bc', label: '5. BACK CONTROL', level: 12, category: 'Primary Position', desc: 'Background Process: Attacker fights to control chest-to-back inside space and neck line; defender clear hooks.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
     { id: 'bc_top', label: 'TOP / REAR ATTACKER', level: 13, category: 'Rear Offense', desc: 'Background Process: Maintain seatbelt control, trap defending wrist inside legs, and control chin line.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
@@ -261,18 +261,19 @@
   const container = document.getElementById('network-container');
   const data = { nodes: nodes, edges: edges };
 
-  // Layout options strictly configured for single-column vertical alignment
+  // Vertical tier layout with horizontal spreading for items on the same row
   const options = {
     layout: {
       hierarchical: {
         enabled: true,
-        direction: 'UD',          // Up to Down
+        direction: 'UD',            // Up-to-Down vertical stack
         sortMethod: 'directed',
-        nodeSpacing: 0,           // Prevents horizontal stepping/diagonal offset
-        treeSpacing: 0,           // Keeps child nodes stacked directly in column line
-        levelSeparation: 95,      // Clean vertical distance between tiers
-        blockShifting: false,     // Disables horizontal tree shifting
-        edgeMinimization: true
+        nodeSpacing: 160,           // Spreads items on the SAME row horizontally
+        treeSpacing: 160,           // Distance between branches on the same level
+        levelSeparation: 110,       // Vertical gap between rows
+        blockShifting: true,
+        edgeMinimization: true,
+        parentCentralization: true  // Centers parent nodes directly above their children
       }
     },
     physics: { enabled: false },
