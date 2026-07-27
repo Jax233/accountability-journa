@@ -99,7 +99,7 @@
   <!-- Drawer Popup Panel -->
   <div id="detail-drawer" class="hidden fixed bottom-0 left-0 right-0 z-30 safe-bottom p-3">
     <div class="max-w-md mx-auto">
-      <div class="control-pill rounded-2xl p-4 shadow-2xl relative border border-zinc-800 flex flex-col max-h-[75vh] overflow-y-auto">
+      <div class="control-pill rounded-2xl p-4 shadow-2xl relative border border-zinc-800 flex flex-col max-h-[78vh] overflow-y-auto">
         
         <button id="btn-close-drawer" class="absolute top-3 right-3 text-zinc-400 hover:text-white p-1.5 bg-zinc-900 rounded-full">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -117,15 +117,23 @@
           <p id="drawer-desc" class="text-xs text-zinc-200 leading-relaxed font-medium"></p>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 shrink-0">
-          <a id="drawer-log-btn" href="#" class="btn-ghost flex items-center justify-center gap-1.5 py-3 rounded-xl font-black italic uppercase text-xs tracking-wide">
-            + Log This
-          </a>
-          <a id="drawer-yt-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary flex items-center justify-center gap-1.5 py-3 rounded-xl text-white font-black italic uppercase text-xs tracking-wide">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-            Tutorial →
+        <div class="space-y-2 shrink-0">
+          <div class="grid grid-cols-2 gap-2">
+            <a id="drawer-log-btn" href="#" class="btn-ghost flex items-center justify-center gap-1.5 py-3 rounded-xl font-black italic uppercase text-xs tracking-wide">
+              + Log This
+            </a>
+            <a id="drawer-yt-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary flex items-center justify-center gap-1.5 py-3 rounded-xl text-white font-black italic uppercase text-xs tracking-wide">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              Tutorial →
+            </a>
+          </div>
+
+          <!-- Further Info / Deep Dive Link (BJJ Globetrotters Seminar) -->
+          <a id="drawer-concept-yt-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-red-600 text-[10px] font-bold uppercase tracking-wider transition">
+            💡 Further Info: Inside Position Seminar →
           </a>
         </div>
+
       </div>
     </div>
   </div>
@@ -165,56 +173,56 @@
 
   const nodeData = [
     // 1. OPEN GUARD
-    { id: 'og', label: '1. OPEN GUARD', x: 0, y: 0, category: 'Primary Position', desc: 'Background Process: The fight for inside leg space. Dictate whether guard is retained, swept, or passed.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
-    { id: 'og_top', label: 'TOP (Passing / Standing)', x: -200, y: 100, category: 'Guard Passing', desc: 'Background Process: Deny inside leg connections. Strip foot grips, step around inside space, and force bottom player flat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
-    { id: 'og_bot', label: 'BOTTOM (Guard Playing)', x: 220, y: 100, category: 'Guard Playing', desc: 'Background Process: Win inside leg position. Place feet on hips/biceps to off balance (Kuzushi) and force top player hands to the mat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...styleSubRole },
-    { id: 'og_top_torreando', label: 'Torreando / Bullfighter Pass', x: -300, y: 200, category: 'Top Pass', desc: 'Deny inside leg connection by gripping pant cuffs, pushing legs laterally, and occupying inside chest-to-hip space.', yt: 'https://www.youtube.com/results?search_query=bjj+torreando+pass+tutorial', ...styleTransition },
-    { id: 'og_top_kneecut', label: 'Knee Cut / Slice Pass', x: -110, y: 200, category: 'Top Pass', desc: 'Drive knee through inside leg space while establishing an underhook to win inside arm space before passing.', yt: 'https://www.youtube.com/results?search_query=bjj+knee+cut+pass+tutorial', ...styleTransition },
-    { id: 'og_bot_dlr', label: 'De La Riva Guard', x: 70, y: 200, category: 'Bottom Guard', desc: 'Use outside hook behind ankle to establish inside control of passer far leg, breaking posture and setting up sweeps.', yt: 'https://www.youtube.com/results?search_query=bjj+de+la+riva+guard+sweeps', ...styleTransition },
-    { id: 'og_bot_spider', label: 'Spider Guard', x: 180, y: 200, category: 'Bottom Guard', desc: 'Place feet directly on biceps to win inside arm/leg space, stretching passer out to off balance (Kuzushi).', yt: 'https://www.youtube.com/results?search_query=bjj+spider+guard+sweeps', ...styleTransition },
-    { id: 'og_bot_slx', label: 'Single Leg X-Guard', x: 290, y: 200, category: 'Bottom Guard', desc: 'Pinch isolated leg between your thighs with foot on hip to gain complete inside leg control and off balance (Kuzushi).', yt: 'https://www.youtube.com/results?search_query=bjj+single+leg+x+guard+sweeps', ...styleTransition },
-    { id: 'og_bot_tripod', label: 'Tripod Sweep', x: 400, y: 200, category: 'Bottom Sweep', desc: 'Combine inside foot-on-hip push with outside ankle hook to off balance (Kuzushi) passer onto their back.', yt: 'https://www.youtube.com/results?search_query=bjj+tripod+sweep+tutorial', ...styleTransition },
+    { id: 'og', label: '1. OPEN GUARD', x: 0, y: 0, category: 'Primary Position', desc: 'Background Process: The fight for inside leg space. Dictate whether guard is retained, swept, or passed.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+concepts+shorts', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
+    { id: 'og_top', label: 'TOP (Passing / Standing)', x: -200, y: 100, category: 'Guard Passing', desc: 'Background Process: Deny inside leg connections. Strip foot grips, step around inside space, and force bottom player flat.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+passing+fundamentals', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
+    { id: 'og_bot', label: 'BOTTOM (Guard Playing)', x: 220, y: 100, category: 'Guard Playing', desc: 'Background Process: Win inside leg position. Place feet on hips/biceps to off balance (Kuzushi) and force top player hands to the mat.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+retention+drills', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...styleSubRole },
+    { id: 'og_top_torreando', label: 'Torreando / Bullfighter Pass', x: -300, y: 200, category: 'Top Pass', desc: 'Deny inside leg connection by gripping pant cuffs, pushing legs laterally, and occupying inside chest-to-hip space.', yt: 'https://www.youtube.com/results?search_query=bjj+torreando+pass+tutorial+shorts', ...styleTransition },
+    { id: 'og_top_kneecut', label: 'Knee Cut / Slice Pass', x: -110, y: 200, category: 'Top Pass', desc: 'Drive knee through inside leg space while establishing an underhook to win inside arm space before passing.', yt: 'https://www.youtube.com/results?search_query=bjj+knee+cut+pass+tutorial+shorts', ...styleTransition },
+    { id: 'og_bot_dlr', label: 'De La Riva Guard', x: 70, y: 200, category: 'Bottom Guard', desc: 'Use outside hook behind ankle to establish inside control of passer far leg, breaking posture and setting up sweeps.', yt: 'https://www.youtube.com/results?search_query=bjj+de+la+riva+guard+sweeps+shorts', ...styleTransition },
+    { id: 'og_bot_spider', label: 'Spider Guard', x: 180, y: 200, category: 'Bottom Guard', desc: 'Place feet directly on biceps to win inside arm/leg space, stretching passer out to off balance (Kuzushi).', yt: 'https://www.youtube.com/results?search_query=bjj+spider+guard+sweeps+shorts', ...styleTransition },
+    { id: 'og_bot_slx', label: 'Single Leg X-Guard', x: 290, y: 200, category: 'Bottom Guard', desc: 'Pinch isolated leg between your thighs with foot on hip to gain complete inside leg control and off balance (Kuzushi).', yt: 'https://www.youtube.com/results?search_query=bjj+single+leg+x+guard+sweeps+shorts', ...styleTransition },
+    { id: 'og_bot_tripod', label: 'Tripod Sweep', x: 400, y: 200, category: 'Bottom Sweep', desc: 'Combine inside foot-on-hip push with outside ankle hook to off balance (Kuzushi) passer onto their back.', yt: 'https://www.youtube.com/results?search_query=bjj+tripod+sweep+tutorial+shorts', ...styleTransition },
 
     // 2. CLOSED GUARD
-    { id: 'cg', label: '2. CLOSED GUARD', x: 0, y: 350, category: 'Primary Position', desc: 'Background Process: Controlling top player posture and hips with locked leg enclosure.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
-    { id: 'cg_top', label: 'TOP (Inside Guard)', x: -200, y: 450, category: 'Top Defense', desc: 'Background Process: Maintain vertical posture, keep elbows inside knees to prevent arm control, and open ankle lock.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
-    { id: 'cg_bot', label: 'BOTTOM (Guard Controller)', x: 220, y: 450, category: 'Bottom Offense', desc: 'Background Process: Break posture down, pull passer past your hip line, and isolate an arm by winning inside grip space.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...styleSubRole },
-    { id: 'cg_top_standingbreak', label: 'Standing Guard Break', x: -290, y: 550, category: 'Top Break', desc: 'Post feet under hips and stand straight up, keeping hands glued inside hips to force ankle lock open.', yt: 'https://www.youtube.com/results?search_query=bjj+standing+closed+guard+break', ...styleTransition },
-    { id: 'cg_top_saucepan', label: 'Log Saw / Elbow Break', x: -110, y: 550, category: 'Top Break', desc: 'Drive elbow into inner thigh space while wedging knee behind tailbone to break ankle lock.', yt: 'https://www.youtube.com/results?search_query=bjj+seated+closed+guard+break', ...styleTransition },
-    { id: 'cg_bot_armbar', label: 'Armbar', x: 50, y: 550, category: 'Bottom Submission', desc: 'Win inside arm angle by pivoting 90 degrees across chest, trapping shoulder with clamped leg posture.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+armbar+details', ...styleSubmission },
-    { id: 'cg_bot_triangle', label: 'Triangle Choke', x: 150, y: 550, category: 'Bottom Submission', desc: 'Isolate one arm inside and push one arm out, locking shin across neck line to close space.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+triangle+choke+finish', ...styleSubmission },
-    { id: 'cg_bot_kimura', label: 'Kimura', x: 250, y: 550, category: 'Bottom Submission', desc: 'Break wrist grip, sit up over shoulder to win inside arm space, locking figure-four wrist lock.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+kimura+system', ...styleSubmission },
-    { id: 'cg_bot_omoplata', label: 'Omoplata', x: 350, y: 550, category: 'Bottom Submission', desc: 'Swing leg over shoulder to lock arm inside hips, driving forward to break shoulder structure.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+omoplata+details', ...styleSubmission },
-    { id: 'cg_bot_hipheist', label: 'Hip Heist / Flower Sweep', x: 450, y: 550, category: 'Bottom Sweep', desc: 'Off balance (Kuzushi) top player by controlling arm/sleeve line and pivoting hip momentum under center of gravity.', yt: 'https://www.youtube.com/results?search_query=bjj+flower+sweep+closed+guard', ...styleTransition },
+    { id: 'cg', label: '2. CLOSED GUARD', x: 0, y: 350, category: 'Primary Position', desc: 'Background Process: Controlling top player posture and hips with locked leg enclosure.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+attacks+shorts', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...stylePrimary },
+    { id: 'cg_top', label: 'TOP (Inside Guard)', x: -200, y: 450, category: 'Top Defense', desc: 'Background Process: Maintain vertical posture, keep elbows inside knees to prevent arm control, and open ankle lock.', yt: 'https://www.youtube.com/results?search_query=bjj+how+to+break+closed+guard', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=736s', ...styleSubRole },
+    { id: 'cg_bot', label: 'BOTTOM (Guard Controller)', x: 220, y: 450, category: 'Bottom Offense', desc: 'Background Process: Break posture down, pull passer past your hip line, and isolate an arm by winning inside grip space.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+posture+break', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=390s', ...styleSubRole },
+    { id: 'cg_top_standingbreak', label: 'Standing Guard Break', x: -290, y: 550, category: 'Top Break', desc: 'Post feet under hips and stand straight up, keeping hands glued inside hips to force ankle lock open.', yt: 'https://www.youtube.com/results?search_query=bjj+standing+closed+guard+break+shorts', ...styleTransition },
+    { id: 'cg_top_saucepan', label: 'Log Saw / Elbow Break', x: -110, y: 550, category: 'Top Break', desc: 'Drive elbow into inner thigh space while wedging knee behind tailbone to break ankle lock.', yt: 'https://www.youtube.com/results?search_query=bjj+seated+closed+guard+break+shorts', ...styleTransition },
+    { id: 'cg_bot_armbar', label: 'Armbar', x: 50, y: 550, category: 'Bottom Submission', desc: 'Win inside arm angle by pivoting 90 degrees across chest, trapping shoulder with clamped leg posture.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+armbar+details+shorts', ...styleSubmission },
+    { id: 'cg_bot_triangle', label: 'Triangle Choke', x: 150, y: 550, category: 'Bottom Submission', desc: 'Isolate one arm inside and push one arm out, locking shin across neck line to close space.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+triangle+choke+finish+shorts', ...styleSubmission },
+    { id: 'cg_bot_kimura', label: 'Kimura', x: 250, y: 550, category: 'Bottom Submission', desc: 'Break wrist grip, sit up over shoulder to win inside arm space, locking figure-four wrist lock.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+kimura+system+shorts', ...styleSubmission },
+    { id: 'cg_bot_omoplata', label: 'Omoplata', x: 350, y: 550, category: 'Bottom Submission', desc: 'Swing leg over shoulder to lock arm inside hips, driving forward to break shoulder structure.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+omoplata+details+shorts', ...styleSubmission },
+    { id: 'cg_bot_hipheist', label: 'Hip Heist / Flower Sweep', x: 450, y: 550, category: 'Bottom Sweep', desc: 'Off balance (Kuzushi) top player by controlling arm/sleeve line and pivoting hip momentum under center of gravity.', yt: 'https://www.youtube.com/results?search_query=bjj+flower+sweep+closed+guard+shorts', ...styleTransition },
 
     // 3. SIDE CONTROL
-    { id: 'sc', label: '3. SIDE CONTROL', x: 0, y: 700, category: 'Primary Position', desc: 'Background Process: The fight for inside arm space. Top player needs underhooks/cross-face; bottom player needs frames.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
-    { id: 'sc_top', label: 'TOP (Dominant Pin)', x: -200, y: 800, category: 'Top Offense', desc: 'Background Process: Drive arms, chest, or head inside defender arms (underhook/cross-face) to flatten shoulders.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
-    { id: 'sc_bot', label: 'BOTTOM (Pinned Defender)', x: 200, y: 800, category: 'Bottom Defense', desc: 'Background Process: Deny inside arm space. Keep elbows glued to ribs, frame across neck/hip, and avoid giving up underhooks.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
-    { id: 'sc_top_papercutter', label: 'Paper Cutter Choke', x: -320, y: 900, category: 'Top Submission', desc: 'Work inside lapel grip and drop forearm across throat line while maintaining heavy cross-body pressure.', yt: 'https://www.youtube.com/results?search_query=bjj+paper+cutter+choke+side+control', ...styleSubmission },
-    { id: 'sc_top_armtriangle', label: 'Arm Triangle (Head & Arm)', x: -200, y: 900, category: 'Top Submission', desc: 'Trap defender arm across their neck line, sliding into inside position to choke with shoulder pressure.', yt: 'https://www.youtube.com/results?search_query=bjj+arm+triangle+from+side+control+finish', ...styleSubmission },
-    { id: 'sc_top_kimuratrap', label: 'Kimura Trap', x: -80, y: 900, category: 'Top Transition', desc: 'Secure figure-four lock on near arm inside space to control defender rotations and take back.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+kimura+trap+system', ...styleTransition },
-    { id: 'sc_bot_shrimp', label: 'Shrimp Guard Recovery', x: 100, y: 900, category: 'Bottom Escape', desc: 'Protect inside arm space with frames, bridge to create hip room, and slide knee inside to restore guard.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+shrimp+escape+tutorial', ...styleTransition },
-    { id: 'sc_bot_underhook', label: 'Underhook to Dogbar / Single', x: 260, y: 900, category: 'Bottom Escape', desc: 'Pummel arm inside to gain underhook, coming up to knees to reverse top/bottom dynamic.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+underhook+escape+tutorial', ...styleTransition },
+    { id: 'sc', label: '3. SIDE CONTROL', x: 0, y: 700, category: 'Primary Position', desc: 'Background Process: The fight for inside arm space. Top player needs underhooks/cross-face; bottom player needs frames.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+pressure+shorts', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
+    { id: 'sc_top', label: 'TOP (Dominant Pin)', x: -200, y: 800, category: 'Top Offense', desc: 'Background Process: Drive arms, chest, or head inside defender arms (underhook/cross-face) to flatten shoulders.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+attacks+system', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
+    { id: 'sc_bot', label: 'BOTTOM (Pinned Defender)', x: 200, y: 800, category: 'Bottom Defense', desc: 'Background Process: Deny inside arm space. Keep elbows glued to ribs, frame across neck/hip, and avoid giving up underhooks.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+escapes+fundamentals', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
+    { id: 'sc_top_papercutter', label: 'Paper Cutter Choke', x: -320, y: 900, category: 'Top Submission', desc: 'Work inside lapel grip and drop forearm across throat line while maintaining heavy cross-body pressure.', yt: 'https://www.youtube.com/results?search_query=bjj+paper+cutter+choke+side+control+shorts', ...styleSubmission },
+    { id: 'sc_top_armtriangle', label: 'Arm Triangle (Head & Arm)', x: -200, y: 900, category: 'Top Submission', desc: 'Trap defender arm across their neck line, sliding into inside position to choke with shoulder pressure.', yt: 'https://www.youtube.com/results?search_query=bjj+arm+triangle+from+side+control+finish+shorts', ...styleSubmission },
+    { id: 'sc_top_kimuratrap', label: 'Kimura Trap', x: -80, y: 900, category: 'Top Transition', desc: 'Secure figure-four lock on near arm inside space to control defender rotations and take back.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+kimura+trap+system+shorts', ...styleTransition },
+    { id: 'sc_bot_shrimp', label: 'Shrimp Guard Recovery', x: 100, y: 900, category: 'Bottom Escape', desc: 'Protect inside arm space with frames, bridge to create hip room, and slide knee inside to restore guard.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+shrimp+escape+tutorial+shorts', ...styleTransition },
+    { id: 'sc_bot_underhook', label: 'Underhook to Dogbar / Single', x: 260, y: 900, category: 'Bottom Escape', desc: 'Pummel arm inside to gain underhook, coming up to knees to reverse top/bottom dynamic.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+underhook+escape+tutorial+shorts', ...styleTransition },
 
     // 4. MOUNT
-    { id: 'm', label: '4. MOUNT', x: 0, y: 1050, category: 'Primary Position', desc: 'Background Process: Top player walks knees high inside defender armpits; bottom player protects neck and hip space.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
-    { id: 'm_top', label: 'TOP (Mount Attacker)', x: -200, y: 1150, category: 'Top Offense', desc: 'Background Process: Walk knees up to win inside armpit space, isolating elbows away from ribs to set up submissions.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
-    { id: 'm_bot', label: 'BOTTOM (Mounted Defender)', x: 200, y: 1150, category: 'Bottom Defense', desc: 'Background Process: Protect inside neck and arm space. Keep elbows tight to hip bone to prevent high mount.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
-    { id: 'm_top_smountarmbar', label: 'S-Mount Armbar', x: -320, y: 1250, category: 'Top Submission', desc: 'Wedge leg high into inside armpit space, isolating far arm before stepping leg over head.', yt: 'https://www.youtube.com/results?search_query=bjj+s+mount+armbar+details', ...styleSubmission },
-    { id: 'm_top_crosscollar', label: 'Cross Collar Choke', x: -200, y: 1250, category: 'Top Submission', desc: 'Slide thumb deep inside collar, cross second arm under chin line, and drop weight forward.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+cross+collar+choke+finish', ...styleSubmission },
-    { id: 'm_top_ezekiel', label: 'Ezekiel Choke', x: -80, y: 1250, category: 'Top Submission', desc: 'Wrap arm behind neck and slide fist inside sleeve cuff across throat line.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+ezekiel+choke+tutorial', ...styleSubmission },
-    { id: 'm_bot_elbowescape', label: 'Elbow-Knee Escape', x: 100, y: 1250, category: 'Bottom Escape', desc: 'Turn onto hip, use inside elbow to frame top knee down, and slip foot through to half guard.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+elbow+knee+escape+tutorial', ...styleTransition },
-    { id: 'm_bot_upa', label: 'Upa / Bridge & Roll Escape', x: 260, y: 1250, category: 'Bottom Escape', desc: 'Trap top player arm and same-side foot line, bridging diagonally to reverse position.', yt: 'https://www.youtube.com/results?search_query=bjj+upa+escape+mount+tutorial', ...styleTransition },
+    { id: 'm', label: '4. MOUNT', x: 0, y: 1050, category: 'Primary Position', desc: 'Background Process: Top player walks knees high inside defender armpits; bottom player protects neck and hip space.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+control+shorts', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
+    { id: 'm_top', label: 'TOP (Mount Attacker)', x: -200, y: 1150, category: 'Top Offense', desc: 'Background Process: Walk knees up to win inside armpit space, isolating elbows away from ribs to set up submissions.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+attacks+system', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
+    { id: 'm_bot', label: 'BOTTOM (Mounted Defender)', x: 200, y: 1150, category: 'Bottom Defense', desc: 'Background Process: Protect inside neck and arm space. Keep elbows tight to hip bone to prevent high mount.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+escapes+fundamentals', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
+    { id: 'm_top_smountarmbar', label: 'S-Mount Armbar', x: -320, y: 1250, category: 'Top Submission', desc: 'Wedge leg high into inside armpit space, isolating far arm before stepping leg over head.', yt: 'https://www.youtube.com/results?search_query=bjj+s+mount+armbar+details+shorts', ...styleSubmission },
+    { id: 'm_top_crosscollar', label: 'Cross Collar Choke', x: -200, y: 1250, category: 'Top Submission', desc: 'Slide thumb deep inside collar, cross second arm under chin line, and drop weight forward.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+cross+collar+choke+finish+shorts', ...styleSubmission },
+    { id: 'm_top_ezekiel', label: 'Ezekiel Choke', x: -80, y: 1250, category: 'Top Submission', desc: 'Wrap arm behind neck and slide fist inside sleeve cuff across throat line.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+ezekiel+choke+tutorial+shorts', ...styleSubmission },
+    { id: 'm_bot_elbowescape', label: 'Elbow-Knee Escape', x: 100, y: 1250, category: 'Bottom Escape', desc: 'Turn onto hip, use inside elbow to frame top knee down, and slip foot through to half guard.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+elbow+knee+escape+tutorial+shorts', ...styleTransition },
+    { id: 'm_bot_upa', label: 'Upa / Bridge & Roll Escape', x: 260, y: 1250, category: 'Bottom Escape', desc: 'Trap top player arm and same-side foot line, bridging diagonally to reverse position.', yt: 'https://www.youtube.com/results?search_query=bjj+upa+escape+mount+tutorial+shorts', ...styleTransition },
 
     // 5. BACK CONTROL
-    { id: 'bc', label: '5. BACK CONTROL', x: 0, y: 1400, category: 'Primary Position', desc: 'Background Process: Attacker fights to control chest-to-back inside space and choke line; defender clear hooks.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
-    { id: 'bc_top', label: 'TOP / REAR ATTACKER', x: -200, y: 1500, category: 'Rear Offense', desc: 'Background Process: Control chest-to-back connection, trap defending hand inside legs, and isolate chin line.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
-    { id: 'bc_bot', label: 'BOTTOM / DEFENDER', x: 200, y: 1500, category: 'Rear Defense', desc: 'Background Process: Deny choke arm inside space, protect collar grips, and slide shoulders flat to mat.', yt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
-    { id: 'bc_top_rnc', label: 'Rear Naked Choke (RNC)', x: -320, y: 1600, category: 'Rear Submission', desc: 'Slide choking arm deep inside under chin, lock biceps grip behind head, and compress chest.', yt: 'https://www.youtube.com/results?search_query=bjj+rear+naked+choke+finish+details', ...styleSubmission },
-    { id: 'bc_top_bowandarrow', label: 'Bow & Arrow Choke', x: -200, y: 1600, category: 'Rear Submission', desc: 'Grip inside collar, grab far pant cuff, and rotate perpendicular to apply leverage against neck.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke+finish', ...styleSubmission },
-    { id: 'bc_top_straightjacket', label: 'Straight Jacket Trap', x: -80, y: 1600, category: 'Rear Attack', desc: 'Use leg hook to trap defender defending hand inside, isolating neck for an undefended choke.', yt: 'https://www.youtube.com/results?search_query=bjj+straight+jacket+back+system+tutorial', ...styleTransition },
-    { id: 'bc_bot_scapulaescape', label: 'Shoulder-to-Mat Escape', x: 160, y: 1600, category: 'Rear Escape', desc: 'Control choking wrist, clear top hook, and slide hips sideways to get shoulders flat on the mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escape+shoulders+to+mat', ...styleTransition }
+    { id: 'bc', label: '5. BACK CONTROL', x: 0, y: 1400, category: 'Primary Position', desc: 'Background Process: Attacker fights to control chest-to-back inside space and choke line; defender clear hooks.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+system+shorts', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...stylePrimary },
+    { id: 'bc_top', label: 'TOP / REAR ATTACKER', x: -200, y: 1500, category: 'Rear Offense', desc: 'Background Process: Control chest-to-back connection, trap defending hand inside legs, and isolate chin line.', yt: 'https://www.youtube.com/results?search_query=bjj+back+attacks+system', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1406s', ...styleSubRole },
+    { id: 'bc_bot', label: 'BOTTOM / DEFENDER', x: 200, y: 1500, category: 'Rear Defense', desc: 'Background Process: Deny choke arm inside space, protect collar grips, and slide shoulders flat to mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escapes+fundamentals', conceptYt: 'https://www.youtube.com/watch?v=9jPMz-UyxDc&t=1730s', ...styleSubRole },
+    { id: 'bc_top_rnc', label: 'Rear Naked Choke (RNC)', x: -320, y: 1600, category: 'Rear Submission', desc: 'Slide choking arm deep inside under chin, lock biceps grip behind head, and compress chest.', yt: 'https://www.youtube.com/results?search_query=bjj+rear+naked+choke+finish+details+shorts', ...styleSubmission },
+    { id: 'bc_top_bowandarrow', label: 'Bow & Arrow Choke', x: -200, y: 1600, category: 'Rear Submission', desc: 'Grip inside collar, grab far pant cuff, and rotate perpendicular to apply leverage against neck.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke+finish+shorts', ...styleSubmission },
+    { id: 'bc_top_straightjacket', label: 'Straight Jacket Trap', x: -80, y: 1600, category: 'Rear Attack', desc: 'Use leg hook to trap defender defending hand inside, isolating neck for an undefended choke.', yt: 'https://www.youtube.com/results?search_query=bjj+straight+jacket+back+system+tutorial+shorts', ...styleTransition },
+    { id: 'bc_bot_scapulaescape', label: 'Shoulder-to-Mat Escape', x: 160, y: 1600, category: 'Rear Escape', desc: 'Control choking wrist, clear top hook, and slide hips sideways to get shoulders flat on the mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escape+shoulders+to+mat+shorts', ...styleTransition }
   ];
 
   const edgeData = [
@@ -304,6 +312,7 @@
   const drawerTitle = document.getElementById('drawer-title');
   const drawerDesc = document.getElementById('drawer-desc');
   const drawerYtLink = document.getElementById('drawer-yt-link');
+  const drawerConceptYtLink = document.getElementById('drawer-concept-yt-link');
   const drawerLogBtn = document.getElementById('drawer-log-btn');
   const btnCloseDrawer = document.getElementById('btn-close-drawer');
 
@@ -331,8 +340,17 @@
           drawerHeatBadge.classList.add('hidden');
         }
 
-        drawerYtLink.href = item.yt || ('https://www.youtube.com/results?search_query=bjj+' + encodeURIComponent(item.label));
+        // Primary technique tutorial link
+        drawerYtLink.href = item.yt || ('https://www.youtube.com/results?search_query=bjj+' + encodeURIComponent(item.label) + '+shorts');
         
+        // Deep Dive Concept link (BJJ Globetrotters seminar)
+        if (item.conceptYt) {
+          drawerConceptYtLink.href = item.conceptYt;
+          drawerConceptYtLink.classList.remove('hidden');
+        } else {
+          drawerConceptYtLink.classList.add('hidden');
+        }
+
         legendBar.classList.add('hidden');
         detailDrawer.classList.remove('hidden');
       }
