@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>I SEE YOU - BJJ Flow Map</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    body {
+      background-color: #121212;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 10px;
+    }
+    #bjj-network {
+      width: 100%;
+      height: 80vh;
+      border: 1px solid #333;
+      border-radius: 12px;
+      background-color: #1a1a1a;
+    }
+    #info-card {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #262626;
+      border-radius: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Jiu-Jitsu Technique Flow</h2>
+  <div id="bjj-network"></div>
+
+  <div id="info-card">
+    <h3 id="card-title">Technique</h3>
+    <p id="card-desc">Tap any node to view counters, details, or instructional videos.</p>
+  </div>
+
+  <script>
+    // 1. Define Nodes (Bubbles)
+    const nodes = new vis.DataSet([
+      // Positions (Blue)
+      { id: 'CG', label: 'Closed Guard', color: '#1d4ed8', font: { color: '#fff' }, shape: 'circle' },
+      { id: 'M', label: 'Mount', color: '#15803d', font: { color: '#fff' }, shape: 'circle' },
+      { id: 'SC', label: 'Side Control', color: '#15803d', font: { color: '#fff' }, shape: 'circle' },
+      { id: 'B', label: 'Back Mount', color: '#15803d', font: { color: '#fff' }, shape: 'circle' },
+
+      // Submissions (Red)
+      { id: 'Tri', label: 'Triangle Choke', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
+      { id: 'Arm', label: 'Armbar', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
+      { id: 'Kim', label: 'Kimura', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
+      { id: 'RNC', label: 'Rear Naked Choke', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
+
+      // Sweeps / Escapes (Yellow)
+      { id: 'Sciss', label: 'Scissor Sweep', color: '#a16207', font: { color: '#fff' }, shape: 'ellipse' },
+      { id: 'Hip', label: 'Hip Heist Sweep', color: '#a16207', font: { color: '#fff' }, shape: 'ellipse' }
+    ]);
+
+    // 2. Define Connections (Edges)
+    const edges = new vis.DataSet([
+      // From Closed Guard
+      { from: 'CG', to: 'Tri', label: 'Attack' },
+      { from: 'CG', to: 'Arm', label: 'Attack' },
+      { from: 'CG', to: 'Kim', label: 'Attack' },
+      { from: 'CG', to: 'Sciss', label: 'Sweep' },
+      
+      // Transitions from Sweeps
+      { from: 'Sciss', to: 'M', label: 'Lands in' },
+
+      // From Mount
+      { from: 'M', to: 'Arm', label: 'Attack' },
+      { from: 'M', to: 'B', label: 'Gift Wrap' },
+
+      // From Back Mount
+      { from: 'B', to: 'RNC', label: 'Finish' }
+    ]);
+
+    // 3. Render Network
+    const container = document.getElementById('bjj-network');
+    const data = { nodes: nodes, edges: edges };
+    const options = {
+      nodes: {
+        borderWidth: 2,
+        size: 25,
+        font: { size: 14 }
+      },
+      edges: {
+        color: { color: '#666666', highlight: '#3b82f6' },
+        arrows: { to: { enabled: true, scaleFactor: 0.8 } },
+        smooth: { type: 'continuous' }
+      },
+      physics: {
+        barnesHut: { gravitationalConstant: -3000, springLength: 95 }
+      }
+    };
+
+    const network = new vis.Network(container, data, options);
+
+    // 4. Handle Node Click Event
+    network.on("click", function (params) {
+      if (params.nodes.length > 0) {
+        const nodeId = params.nodes[0];
+        const selectedNode = nodes.get(nodeId);
+
+        document.getElementById('info-card').style.display = 'block';
+        document.getElementById('card-title').innerText = selectedNode.label;
+        document.getElementById('card-desc').innerText = `You selected ${selectedNode.label}. You can link key details, video URLs, or Supabase technique logs here!`;
+      }
+    });
+  </script>
+</body>
+</html>
