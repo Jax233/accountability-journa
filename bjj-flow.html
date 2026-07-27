@@ -6,7 +6,7 @@
 <title>BJJ Flow Map — I SEE YOU & YOU ARE PERFECT</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="I SEE YOU">
 <meta name="theme-color" content="#000000">
@@ -215,7 +215,7 @@
     { id: 'bc_top_bowandarrow', label: 'Bow & Arrow Choke', x: -200, y: 1600, category: 'Rear Submission', desc: 'Grip inside collar, grab far pant cuff, and rotate perpendicular to apply leverage against neck.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke+finish', ...styleSubmission },
     { id: 'bc_top_straightjacket', label: 'Straight Jacket Trap', x: -80, y: 1600, category: 'Rear Attack', desc: 'Use leg hook to trap defender defending hand inside, isolating neck for an undefended choke.', yt: 'https://www.youtube.com/results?search_query=bjj+straight+jacket+back+system+tutorial', ...styleTransition },
     { id: 'bc_bot_scapulaescape', label: 'Shoulder-to-Mat Escape', x: 160, y: 1600, category: 'Rear Escape', desc: 'Control choking wrist, clear top hook, and slide hips sideways to get shoulders flat on the mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escape+shoulders+to+mat', ...styleTransition }
-  ]);
+  ];
 
   const edgeData = [
     { from: 'og', to: 'og_top' }, { from: 'og', to: 'og_bot' },
@@ -235,10 +235,10 @@
     { from: 'bc_bot', to: 'bc_bot_scapulaescape' }
   ];
 
-  const nodes = new vis.DataSet(nodeData);
-  const edges = new vis.DataSet(edgeData);
+  const visNodes = new vis.DataSet(nodeData);
+  const visEdges = new vis.DataSet(edgeData);
   const container = document.getElementById('network-container');
-  const data = { nodes: nodes, edges: edges };
+  const data = { nodes: visNodes, edges: visEdges };
 
   const options = {
     physics: { enabled: false },
@@ -253,15 +253,15 @@
 
   const network = new vis.Network(container, data, options);
 
-  // Trace root primary position (e.g. 5. BACK CONTROL)
+  // Helper to trace root primary position
   function getPrimaryAncestor(nodeId) {
     let current = nodeId;
     while (current) {
-      const item = nodeData.find(n => n.id === current);
+      const item = nodeData.find(function(n){ return n.id === current; });
       if (item && item.category === 'Primary Position') {
         return item.label;
       }
-      const parentEdge = edgeData.find(e => e.to === current);
+      const parentEdge = edgeData.find(function(e){ return e.to === current; });
       current = parentEdge ? parentEdge.from : null;
     }
     return '';
@@ -270,27 +270,28 @@
   // Heatmap tracking
   let loggedCounts = {};
   try {
-    const session = await sb.auth.getSession();
-    if(session && session.data.session){
-      const { data: trainings } = await sb.from('trainings').select('focus').eq('user_id', session.data.session.user.id);
-      (trainings || []).forEach(t => {
-        if(t.focus){
-          const text = t.focus.toLowerCase();
-          nodeData.forEach(n => {
-            if(text.includes(n.label.toLowerCase())){
-              loggedCounts[n.id] = (loggedCounts[n.id] || 0) + 1;
-            }
-          });
-        }
-      });
+    if(typeof sb !== 'undefined' && sb.auth){
+      const res = await sb.auth.getSession();
+      if(res && res.data && res.data.session){
+        const { data: trainings } = await sb.from('trainings').select('focus').eq('user_id', res.data.session.user.id);
+        (trainings || []).forEach(function(t){
+          if(t.focus){
+            const text = t.focus.toLowerCase();
+            nodeData.forEach(function(n){
+              if(text.includes(n.label.toLowerCase())){
+                loggedCounts[n.id] = (loggedCounts[n.id] || 0) + 1;
+              }
+            });
+          }
+        });
 
-      Object.keys(loggedCounts).forEach(nid => {
-        const count = loggedCounts[nid];
-        const existing = nodes.get(nid);
-        if(existing){
-          nodes.update({ id: nid, borderWidth: 2, color: { border: '#eab308' } });
-        }
-      });
+        Object.keys(loggedCounts).forEach(function(nid){
+          const existing = visNodes.get(nid);
+          if(existing){
+            visNodes.update({ id: nid, borderWidth: 2, color: { border: '#eab308' } });
+          }
+        });
+      }
     }
   } catch(e) { console.warn('Heatmap offline or guest mode'); }
 
@@ -307,32 +308,30 @@
   const btnCloseDrawer = document.getElementById('btn-close-drawer');
 
   // Node tap handler
-  network.on('click', (params) => {
+  network.on('click', function(params){
     if(params.nodes.length > 0){
       const nodeId = params.nodes[0];
-      const item = nodes.get(nodeId);
+      const item = visNodes.get(nodeId);
       
       if(item){
         const primaryPosLabel = getPrimaryAncestor(nodeId);
         
-        drawerParentPos.textContent = primaryPosLabel ? `Position: ${primaryPosLabel}` : '';
+        drawerParentPos.textContent = primaryPosLabel ? 'Position: ' + primaryPosLabel : '';
         drawerCategory.textContent = item.category || 'Technique Detail';
         drawerTitle.textContent = item.label;
         drawerDesc.textContent = item.desc || 'Tactical position or submission.';
         
-        // Pass Primary Position, Focus Label, and Concept
-        drawerLogBtn.href = `training-log.html?focus=${encodeURIComponent(item.label)}&concept=${encodeURIComponent(item.desc)}&primary=${encodeURIComponent(primaryPosLabel)}`;
+        drawerLogBtn.href = 'training-log.html?focus=' + encodeURIComponent(item.label) + '&concept=' + encodeURIComponent(item.desc) + '&primary=' + encodeURIComponent(primaryPosLabel);
 
-        // Heatmap count
         const count = loggedCounts[nodeId] || 0;
         if(count > 0){
-          drawerHeatBadge.textContent = `🔥 Logged ${count}x`;
+          drawerHeatBadge.textContent = '🔥 Logged ' + count + 'x';
           drawerHeatBadge.classList.remove('hidden');
         } else {
           drawerHeatBadge.classList.add('hidden');
         }
 
-        drawerYtLink.href = item.yt || `https://www.youtube.com/results?search_query=bjj+${encodeURIComponent(item.label)}`;
+        drawerYtLink.href = item.yt || ('https://www.youtube.com/results?search_query=bjj+' + encodeURIComponent(item.label));
         
         legendBar.classList.add('hidden');
         detailDrawer.classList.remove('hidden');
@@ -340,27 +339,27 @@
     }
   });
 
-  btnCloseDrawer.addEventListener('click', () => {
+  btnCloseDrawer.addEventListener('click', function(){
     detailDrawer.classList.add('hidden');
     legendBar.classList.remove('hidden');
   });
 
   // Search logic
   const searchInput = document.getElementById('search-nodes');
-  searchInput.addEventListener('input', (e) => {
+  searchInput.addEventListener('input', function(e){
     const term = e.target.value.toLowerCase().trim();
     if(!term){
       network.fit({ animation: { duration: 400 } });
       return;
     }
 
-    const matches = nodes.get().filter(n => n.label.toLowerCase().includes(term));
+    const matches = visNodes.get().filter(function(n){ return n.label.toLowerCase().includes(term); });
     if(matches.length > 0){
       network.focus(matches[0].id, { scale: 1.2, animation: { duration: 300 } });
     }
   });
 
-  document.getElementById('btn-reset-view').addEventListener('click', () => {
+  document.getElementById('btn-reset-view').addEventListener('click', function(){
     searchInput.value = '';
     detailDrawer.classList.add('hidden');
     legendBar.classList.remove('hidden');
