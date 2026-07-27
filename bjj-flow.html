@@ -154,7 +154,6 @@
     shapeProperties: { borderRadius: 6 }
   };
 
-  // Node dataset configured with BJJ Globetrotters timestamped links & targeted technique search links
   const nodes = new vis.DataSet([
     // ==========================================
     // 1. OPEN GUARD
@@ -262,14 +261,18 @@
   const container = document.getElementById('network-container');
   const data = { nodes: nodes, edges: edges };
 
+  // Layout options strictly configured for single-column vertical alignment
   const options = {
     layout: {
       hierarchical: {
         enabled: true,
-        direction: 'UD',
+        direction: 'UD',          // Up to Down
         sortMethod: 'directed',
-        nodeSpacing: 100,
-        levelSeparation: 90
+        nodeSpacing: 0,           // Prevents horizontal stepping/diagonal offset
+        treeSpacing: 0,           // Keeps child nodes stacked directly in column line
+        levelSeparation: 95,      // Clean vertical distance between tiers
+        blockShifting: false,     // Disables horizontal tree shifting
+        edgeMinimization: true
       }
     },
     physics: { enabled: false },
