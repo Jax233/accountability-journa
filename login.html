@@ -6,7 +6,7 @@
 <title>Sign In — I SEE YOU & YOU ARE PERFECT</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="I SEE YOU">
 <meta name="theme-color" content="#000000">
@@ -68,31 +68,36 @@
   const errorMsg = document.getElementById('error-msg');
 
   btn.addEventListener('click', async ()=>{
-    const email = emailInput.value.trim();
-    if(!email){
+    errorMsg.classList.add('hidden');
+    const userEmail = emailInput.value.trim();
+
+    if(!userEmail){
       errorMsg.textContent = 'Enter your email first.';
       errorMsg.classList.remove('hidden');
       return;
     }
+
     btn.disabled = true;
     btn.textContent = 'Sending...';
-    const emailInput = document.getElementById('email').value; // Get the typed email
 
-const { data, error } = await supabase.auth.signInWithOtp({
-  email: emailInput, // Pass the actual input value
-  options: {
-    shouldCreateUser: false // 
-  }
-});
+    // Call Supabase using your 'sb' client object
+    const { data, error } = await sb.auth.signInWithOtp({
+      email: userEmail,
+      options: {
+        shouldCreateUser: false
+      }
+    });
 
-if (error) {
-  console.error('Error sending link:', error.message);
-  alert(error.message);
-} else {
-  alert('Magic link sent! Check your inbox.');
-}
-    document.getElementById('form-state').classList.add('hidden');
-    document.getElementById('sent-state').classList.remove('hidden');
+    if (error) {
+      console.error('Error sending link:', error.message);
+      errorMsg.textContent = error.message;
+      errorMsg.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Send Magic Link';
+    } else {
+      document.getElementById('form-state').classList.add('hidden');
+      document.getElementById('sent-state').classList.remove('hidden');
+    }
   });
 })();
 </script>
