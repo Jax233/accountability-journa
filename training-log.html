@@ -91,8 +91,15 @@
         <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-4 flex items-center gap-2">
           <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Reflection
         </h3>
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">What Did You Learn?</label>
-        <textarea id="t-learned" rows="3" placeholder="Did you win inside position with legs or arms? Why did the sweep/pass succeed?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+        
+        <!-- Concept Banner (Visible when logged from Flow Map) -->
+        <div id="concept-context-box" class="hidden bg-zinc-950 rounded-xl p-3 border border-red-950 mb-4">
+          <p class="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1">Target Concept (Background Process)</p>
+          <p id="concept-context-text" class="text-xs text-zinc-300 italic leading-relaxed"></p>
+        </div>
+
+        <label id="learned-question-label" class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">What Did You Learn?</label>
+        <textarea id="t-learned" rows="3" placeholder="How did the background process affect your rolls today?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
 
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Follow-Up Questions</label>
         <textarea id="t-questions" rows="3" placeholder="What do you need to ask your coach?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none"></textarea>
@@ -146,12 +153,28 @@
 
   const selectedDate = getParam('date') || todayStr();
   const autoFocusTechnique = getParam('focus');
+  const autoConcept = getParam('concept');
 
   document.getElementById('training-date-title').textContent = humanDate(selectedDate);
 
-  // Auto-fill technique if passed from bjj-flow.html
+  // Dynamically tailor Reflection based on the selected Concept
   if (autoFocusTechnique) {
     document.getElementById('t-focus').value = decodeURIComponent(autoFocusTechnique);
+  }
+
+  if (autoConcept) {
+    const conceptText = decodeURIComponent(autoConcept);
+    
+    // Display concept banner
+    document.getElementById('concept-context-box').classList.remove('hidden');
+    document.getElementById('concept-context-text').textContent = conceptText;
+
+    // Tailor the "What Did You Learn?" question and placeholder dynamically
+    const questionLabel = document.getElementById('learned-question-label');
+    const learnedInput = document.getElementById('t-learned');
+
+    questionLabel.textContent = `Concept Reflection: ${decodeURIComponent(autoFocusTechnique)}`;
+    learnedInput.placeholder = `Focus question: Did you successfully control the background process? (${conceptText})`;
   }
 
   const { data: sessions, error } = await sb
