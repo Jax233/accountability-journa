@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>BJJ Flow Map — I SEE YOU & YOU ARE PERFECT</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <style>
   * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
-  html, body { background:#000; overflow: hidden; height: 100%; width: 100%; }
+  html, body { background:#000; margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; }
   
   #network-container {
     width: 100%;
@@ -26,18 +26,22 @@
   }
 
   .control-pill {
-    background: rgba(10, 10, 11, 0.95);
+    background: rgba(10, 10, 11, 0.96);
     backdrop-filter: blur(12px);
     border: 1px solid #27272a;
+  }
+
+  /* Safe Area Padding for S25 Gesture Nav Bar */
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 
   .btn-primary { background:#dc2626; box-shadow: 0 0 16px rgba(220,38,38,0.35); transition: all .18s ease; }
   .btn-primary:hover { background:#ef4444; box-shadow: 0 0 24px rgba(220,38,38,0.55); }
 </style>
 </head>
-<body class="bg-black text-zinc-100 h-screen flex flex-col justify-between">
+<body class="bg-black text-zinc-100 flex flex-col h-screen w-screen overflow-hidden">
 
-<!-- Max Width Shell aligned with your Mobile App Layout -->
 <div class="max-w-md mx-auto w-full h-full flex flex-col relative border-x border-zinc-900 overflow-hidden">
 
   <!-- Header -->
@@ -52,30 +56,30 @@
     <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
   </div>
 
-  <!-- Canvas Container -->
-  <div class="relative flex-1 w-full overflow-hidden">
-    
-    <!-- Floating Search Bar -->
-    <div class="absolute top-3 left-3 right-3 z-20">
-      <div class="control-pill rounded-xl p-2 shadow-2xl flex items-center gap-2">
-        <svg class="w-4 h-4 text-zinc-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input 
-          id="search-nodes" 
-          type="text" 
-          placeholder="Search top/bottom technique..." 
-          class="w-full bg-transparent text-xs font-medium text-zinc-100 placeholder-zinc-500 focus:outline-none"
-        />
-        <button id="btn-reset-view" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 rounded transition shrink-0">
-          Reset
-        </button>
-      </div>
+  <!-- Search Overlay -->
+  <div class="absolute top-16 left-3 right-3 z-20">
+    <div class="control-pill rounded-xl p-2 shadow-2xl flex items-center gap-2">
+      <svg class="w-4 h-4 text-zinc-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input 
+        id="search-nodes" 
+        type="text" 
+        placeholder="Search top/bottom technique..." 
+        class="w-full bg-transparent text-xs font-medium text-zinc-100 placeholder-zinc-500 focus:outline-none"
+      />
+      <button id="btn-reset-view" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 rounded transition shrink-0">
+        Reset
+      </button>
     </div>
+  </div>
 
-    <!-- Vis Network Canvas -->
+  <!-- Diagram Canvas -->
+  <div class="flex-1 w-full h-full relative">
     <div id="network-container"></div>
+  </div>
 
-    <!-- Floating Legend (Default Bottom) -->
-    <div id="legend-bar" class="absolute bottom-3 left-3 right-3 z-20">
+  <!-- Fixed Bottom Legend -->
+  <div id="legend-bar" class="fixed bottom-0 left-0 right-0 z-20 pointer-events-none safe-bottom pb-3 px-3">
+    <div class="max-w-md mx-auto pointer-events-auto">
       <div class="control-pill rounded-xl p-3 flex items-center justify-around text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-zinc-300">
         <div class="flex items-center gap-1.5">
           <span class="w-3 h-3 rounded bg-red-600 border border-red-400 text-white flex items-center justify-center text-[7px] font-black">1</span> Position
@@ -88,19 +92,21 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Mobile Pop-Up Drawer (Responsive for S25 & Tall Viewports) -->
-    <div id="detail-drawer" class="hidden absolute bottom-3 left-3 right-3 z-30 transition-all max-h-[82vh] overflow-y-auto rounded-2xl">
-      <div class="control-pill rounded-2xl p-4 shadow-2xl relative border border-zinc-800 flex flex-col">
+  <!-- Fixed Bottom Pop-Up Drawer (Viewport Anchored) -->
+  <div id="detail-drawer" class="hidden fixed bottom-0 left-0 right-0 z-30 safe-bottom p-3">
+    <div class="max-w-md mx-auto">
+      <div class="control-pill rounded-2xl p-4 shadow-2xl relative border border-zinc-800 flex flex-col max-h-[75vh] overflow-y-auto">
         
-        <button id="btn-close-drawer" class="absolute top-3 right-3 text-zinc-400 hover:text-white p-1.5 bg-zinc-900/80 rounded-full">
+        <button id="btn-close-drawer" class="absolute top-3 right-3 text-zinc-400 hover:text-white p-1.5 bg-zinc-900 rounded-full">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
         <p id="drawer-category" class="text-[9px] text-red-500 font-extrabold uppercase tracking-[0.2em] mb-1">Technique Detail</p>
         <h3 id="drawer-title" class="text-base font-black italic uppercase text-white pr-6 mb-2 leading-tight"></h3>
         
-        <div class="bg-black/60 rounded-xl p-3 border border-zinc-800/80 mb-3">
+        <div class="bg-black/80 rounded-xl p-3 border border-zinc-800 mb-3">
           <p class="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-1">Concept</p>
           <p id="drawer-desc" class="text-xs text-zinc-200 leading-relaxed font-medium"></p>
         </div>
@@ -111,8 +117,8 @@
         </a>
       </div>
     </div>
-
   </div>
+
 </div>
 
 <script>
