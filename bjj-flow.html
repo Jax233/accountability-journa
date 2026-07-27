@@ -45,7 +45,7 @@
     </a>
     <div class="flex-1">
       <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Tactical System</p>
-      <h2 class="font-black italic uppercase text-base leading-tight">Technique Stack</h2>
+      <h2 class="font-black italic uppercase text-base leading-tight">Top / Bottom Stack</h2>
     </div>
     <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
   </div>
@@ -60,7 +60,7 @@
         <input 
           id="search-nodes" 
           type="text" 
-          placeholder="Search position, sweep, pass, submission..." 
+          placeholder="Search top/bottom technique..." 
           class="w-full bg-transparent text-xs font-medium text-zinc-100 placeholder-zinc-500 focus:outline-none"
         />
         <button id="btn-reset-view" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 rounded transition">
@@ -78,10 +78,10 @@
           <span class="w-3 h-3 rounded bg-red-600 border border-red-400 text-white flex items-center justify-center text-[7px] font-black">1</span> Position
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded bg-white text-black flex items-center justify-center text-[7px] font-black">2</span> Transition / Pass
+          <span class="w-3 h-3 rounded bg-zinc-800 border border-zinc-600 text-white flex items-center justify-center text-[7px] font-black">2</span> Top/Bottom
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded bg-red-600 text-black flex items-center justify-center text-[7px] font-black">3</span> Submission
+          <span class="w-3 h-3 rounded bg-white text-black flex items-center justify-center text-[7px] font-black">3</span> Attack/Pass
         </div>
       </div>
     </div>
@@ -117,6 +117,14 @@
     shapeProperties: { borderRadius: 8 }
   };
 
+  const styleSubRole = {
+    shape: 'box',
+    margin: 10,
+    color: { background: '#18181b', border: '#3f3f46' },
+    font: { color: '#f4f4f5', face: 'Inter', weight: '800', size: 11 },
+    shapeProperties: { borderRadius: 6 }
+  };
+
   const styleTransition = {
     shape: 'box',
     margin: 10,
@@ -135,91 +143,149 @@
 
   const nodes = new vis.DataSet([
     // ==========================================
-    // 1. OPEN GUARD (LEVEL 0 -> LEVEL 1)
+    // 1. OPEN GUARD (LEVEL 0 -> 1 -> 2)
     // ==========================================
-    { id: 'og', label: '1. OPEN GUARD', level: 0, category: 'Primary Position', desc: 'Maintain distance, feet on hips/biceps, double sleeve or collar control.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+concepts', ...stylePrimary },
-    { id: 'og_dlr', label: 'De La Riva Guard', level: 1, category: 'Transition', desc: 'Outside hook around ankle with collar/sleeve control.', yt: 'https://www.youtube.com/results?search_query=bjj+de+la+riva+guard+basics', ...styleTransition },
-    { id: 'og_spider', label: 'Spider Guard', level: 1, category: 'Transition', desc: 'Feet on biceps with sleeve grips to stretch opponent.', yt: 'https://www.youtube.com/results?search_query=bjj+spider+guard+sweeps', ...styleTransition },
-    { id: 'og_singlelegx', label: 'Single Leg X (SLX)', level: 1, category: 'Transition', desc: 'Isolate one leg between your legs with foot on hip to unbalance.', yt: 'https://www.youtube.com/results?search_query=bjj+single+leg+x+guard', ...styleTransition },
-    { id: 'og_tripod', label: 'Tripod Sweep', level: 1, category: 'Transition / Sweep', desc: 'Foot on hip, hook behind knee, pull ankle.', yt: 'https://www.youtube.com/results?search_query=bjj+tripod+sweep', ...styleTransition },
-    { id: 'og_torreando', label: 'Torreando Pass', level: 1, category: 'Transition / Pass', desc: 'Control pants at knees, redirect legs laterally to pass.', yt: 'https://www.youtube.com/results?search_query=bjj+torreando+pass', ...styleTransition },
+    { id: 'og', label: '1. OPEN GUARD', level: 0, category: 'Primary Position', desc: 'Distance management position with dynamic grips and leg frame engagement.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+concepts', ...stylePrimary },
+    
+    // Open Guard Roles
+    { id: 'og_top', label: 'TOP (Passing / Standing)', level: 1, category: 'Guard Passing', desc: 'Top passer objectives: maintain posture, strip foot grips, pass around or over legs.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+passing+concepts', ...styleSubRole },
+    { id: 'og_bot', label: 'BOTTOM (Guard Playing)', level: 1, category: 'Guard Playing', desc: 'Bottom guard player objectives: retain guard, break balance, setup sweeps or leg entry.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+retention+and+sweeps', ...styleSubRole },
+    
+    // Open Guard Top Attacks
+    { id: 'og_top_torreando', label: 'Torreando / Bullfighter Pass', level: 2, category: 'Top Pass', desc: 'Grip leg cuffs, redirect legs side-to-side, step past guard.', yt: 'https://www.youtube.com/results?search_query=bjj+torreando+pass', ...styleTransition },
+    { id: 'og_top_kneecut', label: 'Knee Cut / Slice Pass', level: 2, category: 'Top Pass', desc: 'Drive knee across thigh, underhook far side arm, slide hip to mat.', yt: 'https://www.youtube.com/results?search_query=bjj+knee+cut+pass', ...styleTransition },
+    
+    // Open Guard Bottom Attacks
+    { id: 'og_bot_dlr', label: 'De La Riva Guard', level: 2, category: 'Bottom Guard', desc: 'Hook leg around opponent lead ankle with collar and sleeve grip.', yt: 'https://www.youtube.com/results?search_query=bjj+de+la+riva+guard', ...styleTransition },
+    { id: 'og_bot_spider', label: 'Spider Guard', level: 2, category: 'Bottom Guard', desc: 'Place feet on biceps while keeping double sleeve tension.', yt: 'https://www.youtube.com/results?search_query=bjj+spider+guard', ...styleTransition },
+    { id: 'og_bot_slx', label: 'Single Leg X-Guard', level: 2, category: 'Bottom Guard', desc: 'Pinch isolated leg with foot on hip to unbalance or leg lock.', yt: 'https://www.youtube.com/results?search_query=bjj+single+leg+x+guard', ...styleTransition },
+    { id: 'og_bot_tripod', label: 'Tripod Sweep', level: 2, category: 'Bottom Sweep', desc: 'Foot on hip, hook behind knee, pull sleeve to drop passer.', yt: 'https://www.youtube.com/results?search_query=bjj+tripod+sweep', ...styleTransition },
+
 
     // ==========================================
-    // 2. CLOSED GUARD (LEVEL 2 -> LEVEL 3)
+    // 2. CLOSED GUARD (LEVEL 3 -> 4 -> 5)
     // ==========================================
-    { id: 'cg', label: '2. CLOSED GUARD', level: 2, category: 'Primary Position', desc: 'Control hips, break posture, and establish guard control.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+fundamentals', ...stylePrimary },
-    { id: 'cg_armbar', label: 'Closed Guard Armbar', level: 3, category: 'Submission', desc: 'Climb guard, pivot 90 degrees, break posture, clamp down.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+armbar', ...styleSubmission },
-    { id: 'cg_triangle', label: 'Triangle Choke', level: 3, category: 'Submission', desc: 'One arm in, one arm out. Lock figure-four across neck.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+triangle+choke', ...styleSubmission },
-    { id: 'cg_kimura', label: 'Kimura', level: 3, category: 'Submission', desc: 'Break wrist grip, sit up, grab figure-four on arm.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+kimura', ...styleSubmission },
-    { id: 'cg_omoplata', label: 'Omoplata', level: 3, category: 'Submission / Sweep', desc: 'Kick leg over shoulder, isolate arm with hips, sit up to finish.', yt: 'https://www.youtube.com/results?search_query=bjj+omoplata+closed+guard', ...styleSubmission },
-    { id: 'cg_pendulum', label: 'Pendulum Sweep', level: 3, category: 'Transition / Sweep', desc: 'Underhook leg, swing outside leg for momentum, roll opponent over.', yt: 'https://www.youtube.com/results?search_query=bjj+pendulum+sweep', ...styleTransition },
-    { id: 'cg_hipheist', label: 'Hip Heist Sweep', level: 3, category: 'Transition / Sweep', desc: 'Post arm, explode up onto elbow and drive hips through.', yt: 'https://www.youtube.com/results?search_query=bjj+hip+heist+sweep', ...styleTransition },
+    { id: 'cg', label: '2. CLOSED GUARD', level: 3, category: 'Primary Position', desc: 'Legs wrapped locked around opponent torso with posture control.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+fundamentals', ...stylePrimary },
+    
+    // Closed Guard Roles
+    { id: 'cg_top', label: 'TOP (Inside Guard)', level: 4, category: 'Top Defense', desc: 'Inside player objectives: posture up, keep elbows tight, break ankle lock.', yt: 'https://www.youtube.com/results?search_query=bjj+how+to+break+closed+guard', ...styleSubRole },
+    { id: 'cg_bot', label: 'BOTTOM (Guard Controller)', level: 4, category: 'Bottom Offense', desc: 'Bottom player objectives: break posture down, attack arms, necks, or sweep.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+attacks', ...styleSubRole },
+    
+    // Closed Guard Top Options
+    { id: 'cg_top_standingbreak', label: 'Standing Guard Break', level: 5, category: 'Top Break', desc: 'Stand up with sleeve control, push knee down to pop ankles open.', yt: 'https://www.youtube.com/results?search_query=bjj+standing+closed+guard+break', ...styleTransition },
+    { id: 'cg_top_saucepan', label: 'Log Saw / Elbow Break', level: 5, category: 'Top Break', desc: 'Pin hip, wedge knee into tailbone, push inner thigh.', yt: 'https://www.youtube.com/results?search_query=bjj+seated+closed+guard+break', ...styleTransition },
+    
+    // Closed Guard Bottom Options
+    { id: 'cg_bot_armbar', label: 'Armbar', level: 5, category: 'Bottom Submission', desc: 'Pivot 90 degrees across chest, clamp legs over back, extend hips.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+armbar', ...styleSubmission },
+    { id: 'cg_bot_triangle', label: 'Triangle Choke', level: 5, category: 'Bottom Submission', desc: 'Isolate one arm in/one arm out, clamp shin behind neck.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+triangle+choke', ...styleSubmission },
+    { id: 'cg_bot_kimura', label: 'Kimura', level: 5, category: 'Bottom Submission', desc: 'Break wrist grip, sit up over shoulder, double wrist lock.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+kimura', ...styleSubmission },
+    { id: 'cg_bot_omoplata', label: 'Omoplata', level: 5, category: 'Bottom Submission', desc: 'Swing leg over shoulder, lock arm with hips, drive forward.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+omoplata', ...styleSubmission },
+    { id: 'cg_bot_hipheist', label: 'Hip Heist / Flower Sweep', level: 5, category: 'Bottom Sweep', desc: 'Unbalance passer, kick leg to sweep top player over.', yt: 'https://www.youtube.com/results?search_query=bjj+flower+sweep', ...styleTransition },
+
 
     // ==========================================
-    // 3. SIDE CONTROL (LEVEL 4 -> LEVEL 5)
+    // 3. SIDE CONTROL (LEVEL 6 -> 7 -> 8)
     // ==========================================
-    { id: 'sc', label: '3. SIDE CONTROL', level: 4, category: 'Primary Position', desc: 'Cross-face pressure, underhook, and heavy weight distribution.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+pressure', ...stylePrimary },
-    { id: 'sc_kimuratrap', label: 'Kimura Trap System', level: 5, category: 'Transition', desc: 'Isolate arm for back takes, armbars, or submissions.', yt: 'https://www.youtube.com/results?search_query=bjj+kimura+trap+system', ...styleTransition },
-    { id: 'sc_papercutter', label: 'Paper Cutter Choke', level: 5, category: 'Submission', desc: 'Deep lapel grip with forearm dropping down across throat.', yt: 'https://www.youtube.com/results?search_query=bjj+paper+cutter+choke', ...styleSubmission },
-    { id: 'sc_armtriangle', label: 'Arm Triangle', level: 5, category: 'Submission', desc: 'Trap opponent arm across neck, dismount to side, squeeze.', yt: 'https://www.youtube.com/results?search_query=bjj+arm+triangle+finish', ...styleSubmission },
-    { id: 'sc_northsouth', label: 'North South Choke', level: 5, category: 'Submission', desc: 'Transition north-south, trap arm/neck, lower shoulder to choke.', yt: 'https://www.youtube.com/results?search_query=bjj+north+south+choke', ...styleSubmission },
-    { id: 'sc_kesagatame', label: 'Kesa Gatame (Scarf Hold)', level: 5, category: 'Transition', desc: 'Heavy side head-and-arm control with wide base.', yt: 'https://www.youtube.com/results?search_query=bjj+kesa+gatame+control', ...styleTransition },
+    { id: 'sc', label: '3. SIDE CONTROL', level: 6, category: 'Primary Position', desc: 'Chest-to-chest pin perpendicular across opponent.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+pressure', ...stylePrimary },
+    
+    // Side Control Roles
+    { id: 'sc_top', label: 'TOP (Dominant Pin)', level: 7, category: 'Top Offense', desc: 'Top objectives: cross-face pressure, prevent guard recovery, isolate limbs.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+attacks', ...styleSubRole },
+    { id: 'sc_bot', label: 'BOTTOM (Pinned Defender)', level: 7, category: 'Bottom Defense', desc: 'Bottom objectives: construct frames, bridge/shrimp, slide knees inside to recover.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+escapes', ...styleSubRole },
+    
+    // Side Control Top Options
+    { id: 'sc_top_papercutter', label: 'Paper Cutter Choke', level: 8, category: 'Top Submission', desc: 'Deep lapel grip with elbow driving down past chest/throat.', yt: 'https://www.youtube.com/results?search_query=bjj+paper+cutter+choke', ...styleSubmission },
+    { id: 'sc_top_armtriangle', label: 'Arm Triangle (Head & Arm)', level: 8, category: 'Top Submission', desc: 'Trap opponent far arm across neck, dismount side, compress.', yt: 'https://www.youtube.com/results?search_query=bjj+arm+triangle+from+side+control', ...styleSubmission },
+    { id: 'sc_top_kimuratrap', label: 'Kimura Trap', level: 8, category: 'Top Transition', desc: 'Figure-four grip on near arm to attack or transition to back.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+kimura+trap', ...styleTransition },
+    
+    // Side Control Bottom Options
+    { id: 'sc_bot_shrimp', label: 'Shrimp Guard Recovery', level: 8, category: 'Bottom Escape', desc: 'Frame on neck/hip, bridge, hip-escape to slip bottom knee inside.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+shrimp+escape', ...styleTransition },
+    { id: 'sc_bot_underhook', label: 'Underhook to Dogbar / Single', level: 8, category: 'Bottom Escape', desc: 'Get deep underhook, turn to knees, double leg or take back.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+underhook+escape', ...styleTransition },
+
 
     // ==========================================
-    // 4. MOUNT (LEVEL 6 -> LEVEL 7)
+    // 4. MOUNT (LEVEL 9 -> 10 -> 11)
     // ==========================================
-    { id: 'm', label: '4. MOUNT', level: 6, category: 'Primary Position', desc: 'High mount isolation, heavy hips, and chest-to-chest control.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+control+and+attacks', ...stylePrimary },
-    { id: 'm_armbar', label: 'S-Mount Armbar', level: 7, category: 'Submission', desc: 'Slide into high S-mount, isolate far arm, swing leg over.', yt: 'https://www.youtube.com/results?search_query=bjj+s+mount+armbar', ...styleSubmission },
-    { id: 'm_collar', label: 'Cross Collar Choke', level: 7, category: 'Submission', desc: 'Deep cross-collar grip, opening palm, drop head down.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+cross+collar+choke', ...styleSubmission },
-    { id: 'm_mountedtriangle', label: 'Mounted Triangle', level: 7, category: 'Submission', desc: 'Isolate arm, slide knee past neck, lock triangle while mounted.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+triangle', ...styleSubmission },
-    { id: 'm_ezekiel', label: 'Ezekiel Choke', level: 7, category: 'Submission', desc: 'Choke using sleeve cuff behind opponent neck.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+ezekiel+choke', ...styleSubmission },
-    { id: 'm_backtake', label: 'Gift Wrap Back Take', level: 7, category: 'Transition', desc: 'Trap arm across face, grab wrist, slide into back control.', yt: 'https://www.youtube.com/results?search_query=bjj+gift+wrap+back+take', ...styleTransition },
+    { id: 'm', label: '4. MOUNT', level: 9, category: 'Primary Position', desc: 'Seated directly on top of opponent torso facing their head.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+control', ...stylePrimary },
+    
+    // Mount Roles
+    { id: 'm_top', label: 'TOP (Mount Attacker)', level: 10, category: 'Top Offense', desc: 'Top objectives: stay heavy, walk elbows up above head, set up submissions.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+attacks+system', ...styleSubRole },
+    { id: 'm_bot', label: 'BOTTOM (Mounted Defender)', level: 10, category: 'Bottom Defense', desc: 'Bottom objectives: protect neck/arms, bridge-and-roll or elbow-escape.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+escapes', ...styleSubRole },
+    
+    // Mount Top Options
+    { id: 'm_top_smountarmbar', label: 'S-Mount Armbar', level: 11, category: 'Top Submission', desc: 'Slide knees high into S-shape, isolate far arm, swing leg over.', yt: 'https://www.youtube.com/results?search_query=bjj+s+mount+armbar', ...styleSubmission },
+    { id: 'm_top_crosscollar', label: 'Cross Collar Choke', level: 11, category: 'Top Submission', desc: 'Deep four-finger collar grip, cross second hand under, drop head.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+cross+collar+choke', ...styleSubmission },
+    { id: 'm_top_ezekiel', label: 'Ezekiel Choke', level: 11, category: 'Top Submission', desc: 'Sleeve cuff grip behind head, chop fist into throat.', yt: 'https://www.youtube.com/results?search_query=bjj+mounted+ezekiel+choke', ...styleSubmission },
+    
+    // Mount Bottom Options
+    { id: 'm_bot_elbowescape', label: 'Elbow-Knee Escape', level: 11, category: 'Bottom Escape', desc: 'Turn sideways, slide elbow down leg to catch foot into half guard.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+elbow+knee+escape', ...styleTransition },
+    { id: 'm_bot_upa', label: 'Upa / Bridge & Roll Escape', level: 11, category: 'Bottom Escape', desc: 'Trap overhook arm and same-side ankle, bridge high to roll.', yt: 'https://www.youtube.com/results?search_query=bjj+upa+escape+mount', ...styleTransition },
+
 
     // ==========================================
-    // 5. BACK CONTROL (LEVEL 8 -> LEVEL 9)
+    // 5. BACK CONTROL (LEVEL 12 -> 13 -> 14)
     // ==========================================
-    { id: 'bc', label: '5. BACK CONTROL', level: 8, category: 'Primary Position', desc: 'Seatbelt grip, hooks in, and head positioning.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+system', ...stylePrimary },
-    { id: 'bc_rnc', label: 'Rear Naked Choke', level: 9, category: 'Submission', desc: 'Biceps-to-biceps lock, hide hand behind head, squeeze elbows.', yt: 'https://www.youtube.com/results?search_query=bjj+rear+naked+choke+finish', ...styleSubmission },
-    { id: 'bc_bow', label: 'Bow & Arrow Choke', level: 9, category: 'Submission', desc: 'Deep lapel grip, grab pant leg, extend hips and pull.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke', ...styleSubmission },
-    { id: 'bc_straightjacket', label: 'Straight Jacket System', level: 9, category: 'Transition', desc: 'Trap opponent defending arm with your legs to isolate neck.', yt: 'https://www.youtube.com/results?search_query=bjj+straight+jacket+back+system', ...styleTransition },
-    { id: 'bc_armbar', label: 'Back Armbar Transition', level: 9, category: 'Submission', desc: 'Transition off back when opponent turns or defends choke.', yt: 'https://www.youtube.com/results?search_query=bjj+back+armbar+transition', ...styleSubmission }
+    { id: 'bc', label: '5. BACK CONTROL', level: 12, category: 'Primary Position', desc: 'Rear body lock with seatbelt grip, hooks, or body triangle.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+system', ...stylePrimary },
+    
+    // Back Control Roles
+    { id: 'bc_top', label: 'TOP / REAR ATTACKER', level: 13, category: 'Rear Offense', desc: 'Attacker objectives: control opponent head line, trap defending hands, finish choke.', yt: 'https://www.youtube.com/results?search_query=bjj+back+attacks+system', ...styleSubRole },
+    { id: 'bc_bot', label: 'BOTTOM / DEFENDER', level: 13, category: 'Rear Defense', desc: 'Defender objectives: defend choke neck line, clear hooks, slide shoulders to mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escapes', ...styleSubRole },
+    
+    // Back Control Attacker Options
+    { id: 'bc_top_rnc', label: 'Rear Naked Choke (RNC)', level: 14, category: 'Rear Submission', desc: 'Biceps-to-biceps grip, lock behind head, expand chest to finish.', yt: 'https://www.youtube.com/results?search_query=bjj+rear+naked+choke+finish', ...styleSubmission },
+    { id: 'bc_top_bowandarrow', label: 'Bow & Arrow Choke', level: 14, category: 'Rear Submission', desc: 'Deep collar grip, grab pant cuff, rotate perpendicular and extend.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke', ...styleSubmission },
+    { id: 'bc_top_straightjacket', label: 'Straight Jacket Trap', level: 14, category: 'Rear Attack', desc: 'Use leg hook to trap defender wrist, isolating neck for easy choke.', yt: 'https://www.youtube.com/results?search_query=bjj+straight+jacket+back+system', ...styleTransition },
+    
+    // Back Control Defender Options
+    { id: 'bc_bot_scapulaescape', label: 'Shoulder-to-Mat Escape', level: 14, category: 'Rear Escape', desc: 'Fight choke hand, slide hips off side, drive shoulders down to mat.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+escape+shoulders+to+mat', ...styleTransition }
   ]);
 
   const edges = new vis.DataSet([
-    // Open Guard branches
-    { from: 'og', to: 'og_dlr' },
-    { from: 'og', to: 'og_spider' },
-    { from: 'og', to: 'og_singlelegx' },
-    { from: 'og', to: 'og_tripod' },
-    { from: 'og', to: 'og_torreando' },
+    // Open Guard Top/Bottom connections
+    { from: 'og', to: 'og_top' },
+    { from: 'og', to: 'og_bot' },
+    { from: 'og_top', to: 'og_top_torreando' },
+    { from: 'og_top', to: 'og_top_kneecut' },
+    { from: 'og_bot', to: 'og_bot_dlr' },
+    { from: 'og_bot', to: 'og_bot_spider' },
+    { from: 'og_bot', to: 'og_bot_slx' },
+    { from: 'og_bot', to: 'og_bot_tripod' },
 
-    // Closed Guard branches
-    { from: 'cg', to: 'cg_armbar' },
-    { from: 'cg', to: 'cg_triangle' },
-    { from: 'cg', to: 'cg_kimura' },
-    { from: 'cg', to: 'cg_omoplata' },
-    { from: 'cg', to: 'cg_pendulum' },
-    { from: 'cg', to: 'cg_hipheist' },
+    // Closed Guard Top/Bottom connections
+    { from: 'cg', to: 'cg_top' },
+    { from: 'cg', to: 'cg_bot' },
+    { from: 'cg_top', to: 'cg_top_standingbreak' },
+    { from: 'cg_top', to: 'cg_top_saucepan' },
+    { from: 'cg_bot', to: 'cg_bot_armbar' },
+    { from: 'cg_bot', to: 'cg_bot_triangle' },
+    { from: 'cg_bot', to: 'cg_bot_kimura' },
+    { from: 'cg_bot', to: 'cg_bot_omoplata' },
+    { from: 'cg_bot', to: 'cg_bot_hipheist' },
 
-    // Side Control branches
-    { from: 'sc', to: 'sc_kimuratrap' },
-    { from: 'sc', to: 'sc_papercutter' },
-    { from: 'sc', to: 'sc_armtriangle' },
-    { from: 'sc', to: 'sc_northsouth' },
-    { from: 'sc', to: 'sc_kesagatame' },
+    // Side Control Top/Bottom connections
+    { from: 'sc', to: 'sc_top' },
+    { from: 'sc', to: 'sc_bot' },
+    { from: 'sc_top', to: 'sc_top_papercutter' },
+    { from: 'sc_top', to: 'sc_top_armtriangle' },
+    { from: 'sc_top', to: 'sc_top_kimuratrap' },
+    { from: 'sc_bot', to: 'sc_bot_shrimp' },
+    { from: 'sc_bot', to: 'sc_bot_underhook' },
 
-    // Mount branches
-    { from: 'm', to: 'm_armbar' },
-    { from: 'm', to: 'm_collar' },
-    { from: 'm', to: 'm_mountedtriangle' },
-    { from: 'm', to: 'm_ezekiel' },
-    { from: 'm', to: 'm_backtake' },
+    // Mount Top/Bottom connections
+    { from: 'm', to: 'm_top' },
+    { from: 'm', to: 'm_bot' },
+    { from: 'm_top', to: 'm_top_smountarmbar' },
+    { from: 'm_top', to: 'm_top_crosscollar' },
+    { from: 'm_top', to: 'm_top_ezekiel' },
+    { from: 'm_bot', to: 'm_bot_elbowescape' },
+    { from: 'm_bot', to: 'm_bot_upa' },
 
-    // Back Control branches
-    { from: 'bc', to: 'bc_rnc' },
-    { from: 'bc', to: 'bc_bow' },
-    { from: 'bc', to: 'bc_straightjacket' },
-    { from: 'bc', to: 'bc_armbar' }
+    // Back Control Attacker/Defender connections
+    { from: 'bc', to: 'bc_top' },
+    { from: 'bc', to: 'bc_bot' },
+    { from: 'bc_top', to: 'bc_top_rnc' },
+    { from: 'bc_top', to: 'bc_top_bowandarrow' },
+    { from: 'bc_top', to: 'bc_top_straightjacket' },
+    { from: 'bc_bot', to: 'bc_bot_scapulaescape' }
   ]);
 
   const container = document.getElementById('network-container');
@@ -231,8 +297,8 @@
         enabled: true,
         direction: 'UD',
         sortMethod: 'directed',
-        nodeSpacing: 110,
-        levelSeparation: 95
+        nodeSpacing: 100,
+        levelSeparation: 90
       }
     },
     physics: { enabled: false },
