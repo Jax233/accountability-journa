@@ -1,114 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>I SEE YOU - BJJ Flow Map</title>
-  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 10px;
-    }
-    #bjj-network {
-      width: 100%;
-      height: 80vh;
-      border: 1px solid #333;
-      border-radius: 12px;
-      background-color: #1a1a1a;
-    }
-    #info-card {
-      margin-top: 15px;
-      padding: 15px;
-      background-color: #262626;
-      border-radius: 8px;
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BJJ Flow Map — I SEE YOU & YOU ARE PERFECT</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="I SEE YOU">
+<meta name="theme-color" content="#000000">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', sans-serif; }
+  html, body { background:#000; overflow: hidden; }
+  .card { background:#0a0a0b; border:1px solid #18181b; }
+  .input-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
+  .input-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18), 0 0 18px rgba(220,38,38,0.25); }
+  .input-field::placeholder { color:#52525b; }
+  
+  #network-container {
+    width: 100%;
+    height: calc(100vh - 73px);
+    background: radial-gradient(circle at center, #111113 0%, #000000 100%);
+  }
+
+  /* Custom styling for canvas controls overlay */
+  .control-pill {
+    background: rgba(10, 10, 11, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid #18181b;
+  }
+</style>
 </head>
-<body>
+<body class="bg-black text-zinc-100">
+<div class="max-w-md mx-auto h-screen bg-black flex flex-col relative border-x border-zinc-900">
 
-  <h2>Jiu-Jitsu Technique Flow</h2>
-  <div id="bjj-network"></div>
-
-  <div id="info-card">
-    <h3 id="card-title">Technique</h3>
-    <p id="card-desc">Tap any node to view counters, details, or instructional videos.</p>
+  <!-- Header aligned with training-log style -->
+  <div class="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-zinc-900 px-5 py-4 flex items-center gap-3">
+    <a href="training-log.html" class="w-9 h-9 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-300 hover:text-red-500 transition">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+    <div class="flex-1">
+      <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Tactical System</p>
+      <h2 class="font-black italic uppercase text-base leading-tight">Technique Flow Map</h2>
+    </div>
+    <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
   </div>
 
-  <script>
-    // 1. Define Nodes (Bubbles)
-    const nodes = new vis.DataSet([
-      // Positions (Blue)
-      { id: 'CG', label: 'Closed Guard', color: '#1d4ed8', font: { color: '#fff' }, shape: 'circle' },
-      { id: 'M', label: 'Mount', color: '#15803d', font: { color: '#fff' }, shape: 'circle' },
-      { id: 'SC', label: 'Side Control', color: '#15803d', font: { color: '#fff' }, shape: 'circle' },
-      { id: 'B', label: 'Back Mount', color: '#15803d', font: { color: '#fff' }, shape: 'circle' },
+  <!-- Main Mindmap Container -->
+  <div class="relative flex-1">
+    
+    <!-- Floating Search Bar -->
+    <div class="absolute top-4 left-4 right-4 z-20">
+      <div class="control-pill rounded-xl p-2 shadow-2xl flex items-center gap-2">
+        <svg class="w-4 h-4 text-zinc-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input 
+          id="search-nodes" 
+          type="text" 
+          placeholder="Search position or submission..." 
+          class="w-full bg-transparent text-xs font-medium text-zinc-100 placeholder-zinc-500 focus:outline-none"
+        />
+        <button id="btn-reset-view" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 rounded transition">
+          Reset
+        </button>
+      </div>
+    </div>
 
-      // Submissions (Red)
-      { id: 'Tri', label: 'Triangle Choke', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
-      { id: 'Arm', label: 'Armbar', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
-      { id: 'Kim', label: 'Kimura', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
-      { id: 'RNC', label: 'Rear Naked Choke', color: '#b91c1c', font: { color: '#fff' }, shape: 'ellipse' },
+    <!-- Vis.js Diagram Canvas -->
+    <div id="network-container"></div>
 
-      // Sweeps / Escapes (Yellow)
-      { id: 'Sciss', label: 'Scissor Sweep', color: '#a16207', font: { color: '#fff' }, shape: 'ellipse' },
-      { id: 'Hip', label: 'Hip Heist Sweep', color: '#a16207', font: { color: '#fff' }, shape: 'ellipse' }
-    ]);
+    <!-- Floating Legend Bar -->
+    <div class="absolute bottom-4 left-4 right-4 z-20">
+      <div class="control-pill rounded-xl p-3 flex items-center justify-around text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></span> Primary Position
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 border border-zinc-600"></span> Transition / Pass
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-950 border border-red-600"></span> Submission
+        </div>
+      </div>
+    </div>
 
-    // 2. Define Connections (Edges)
-    const edges = new vis.DataSet([
-      // From Closed Guard
-      { from: 'CG', to: 'Tri', label: 'Attack' },
-      { from: 'CG', to: 'Arm', label: 'Attack' },
-      { from: 'CG', to: 'Kim', label: 'Attack' },
-      { from: 'CG', to: 'Sciss', label: 'Sweep' },
-      
-      // Transitions from Sweeps
-      { from: 'Sciss', to: 'M', label: 'Lands in' },
+  </div>
+</div>
 
-      // From Mount
-      { from: 'M', to: 'Arm', label: 'Attack' },
-      { from: 'M', to: 'B', label: 'Gift Wrap' },
+<script>
+(function(){
+  // Node definitions matching the high-contrast dark theme
+  const nodes = new vis.DataSet([
+    // Core Positions
+    { id: 1, label: 'CLOSED GUARD', shape: 'ellipse', color: { background: '#dc2626', border: '#ef4444' }, font: { color: '#ffffff', face: 'Inter', weight: '900', size: 14 } },
+    { id: 2, label: 'OPEN GUARD', shape: 'ellipse', color: { background: '#18181b', border: '#3f3f46' }, font: { color: '#f4f4f5', face: 'Inter', weight: '700', size: 12 } },
+    { id: 3, label: 'SIDE CONTROL', shape: 'ellipse', color: { background: '#18181b', border: '#3f3f46' }, font: { color: '#f4f4f5', face: 'Inter', weight: '700', size: 12 } },
+    { id: 4, label: 'MOUNT', shape: 'ellipse', color: { background: '#dc2626', border: '#ef4444' }, font: { color: '#ffffff', face: 'Inter', weight: '900', size: 14 } },
+    { id: 5, label: 'BACK CONTROL', shape: 'ellipse', color: { background: '#dc2626', border: '#ef4444' }, font: { color: '#ffffff', face: 'Inter', weight: '900', size: 14 } },
+    
+    // Transitions & Guards
+    { id: 6, label: 'De La Riva Guard', shape: 'box', color: { background: '#0a0a0b', border: '#27272a' }, font: { color: '#a1a1aa', face: 'Inter', size: 11 } },
+    { id: 7, label: 'Kimura Trap', shape: 'box', color: { background: '#0a0a0b', border: '#27272a' }, font: { color: '#a1a1aa', face: 'Inter', size: 11 } },
+    
+    // Submissions
+    { id: 8, label: 'Armbar', shape: 'ellipse', color: { background: '#450a0a', border: '#dc2626' }, font: { color: '#f87171', face: 'Inter', weight: '800', size: 11 } },
+    { id: 9, label: 'Triangle Choke', shape: 'ellipse', color: { background: '#450a0a', border: '#dc2626' }, font: { color: '#f87171', face: 'Inter', weight: '800', size: 11 } },
+    { id: 10, label: 'Rear Naked Choke', shape: 'ellipse', color: { background: '#450a0a', border: '#dc2626' }, font: { color: '#f87171', face: 'Inter', weight: '800', size: 11 } },
+    { id: 11, label: 'Cross Collar Choke', shape: 'ellipse', color: { background: '#450a0a', border: '#dc2626' }, font: { color: '#f87171', face: 'Inter', weight: '800', size: 11 } }
+  ]);
 
-      // From Back Mount
-      { from: 'B', to: 'RNC', label: 'Finish' }
-    ]);
+  // Directed flow connections
+  const edges = new vis.DataSet([
+    { from: 1, to: 8, arrows: 'to', color: { color: '#dc2626', highlight: '#ef4444' } },
+    { from: 1, to: 9, arrows: 'to', color: { color: '#dc2626', highlight: '#ef4444' } },
+    { from: 1, to: 2, arrows: 'to', color: { color: '#3f3f46' } },
+    { from: 2, to: 6, arrows: 'to', color: { color: '#3f3f46' } },
+    { from: 6, to: 3, arrows: 'to', color: { color: '#3f3f46' } },
+    { from: 3, to: 4, arrows: 'to', color: { color: '#3f3f46' } },
+    { from: 3, to: 7, arrows: 'to', color: { color: '#3f3f46' } },
+    { from: 7, to: 5, arrows: 'to', color: { color: '#dc2626' } },
+    { from: 4, to: 11, arrows: 'to', color: { color: '#dc2626' } },
+    { from: 5, to: 10, arrows: 'to', color: { color: '#dc2626' } }
+  ]);
 
-    // 3. Render Network
-    const container = document.getElementById('bjj-network');
-    const data = { nodes: nodes, edges: edges };
-    const options = {
-      nodes: {
-        borderWidth: 2,
-        size: 25,
-        font: { size: 14 }
-      },
-      edges: {
-        color: { color: '#666666', highlight: '#3b82f6' },
-        arrows: { to: { enabled: true, scaleFactor: 0.8 } },
-        smooth: { type: 'continuous' }
-      },
-      physics: {
-        barnesHut: { gravitationalConstant: -3000, springLength: 95 }
+  const container = document.getElementById('network-container');
+  const data = { nodes: nodes, edges: edges };
+  
+  const options = {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: {
+        gravitationalConstant: -35,
+        centralGravity: 0.01,
+        springLength: 100,
+        springConstant: 0.08
       }
-    };
+    },
+    interaction: {
+      hover: true,
+      zoomView: true,
+      dragView: true
+    }
+  };
 
-    const network = new vis.Network(container, data, options);
+  const network = new vis.Network(container, data, options);
 
-    // 4. Handle Node Click Event
-    network.on("click", function (params) {
-      if (params.nodes.length > 0) {
-        const nodeId = params.nodes[0];
-        const selectedNode = nodes.get(nodeId);
+  // Search/Highlight filter
+  const searchInput = document.getElementById('search-nodes');
+  searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase().trim();
+    if(!term){
+      network.fit({ animation: { duration: 500 } });
+      return;
+    }
 
-        document.getElementById('info-card').style.display = 'block';
-        document.getElementById('card-title').innerText = selectedNode.label;
-        document.getElementById('card-desc').innerText = `You selected ${selectedNode.label}. You can link key details, video URLs, or Supabase technique logs here!`;
-      }
-    });
-  </script>
+    const matches = nodes.get().filter(n => n.label.toLowerCase().includes(term));
+    if(matches.length > 0){
+      network.focus(matches[0].id, { scale: 1.2, animation: { duration: 400 } });
+    }
+  });
+
+  document.getElementById('btn-reset-view').addEventListener('click', () => {
+    searchInput.value = '';
+    network.fit({ animation: { duration: 500 } });
+  });
+
+})();
+</script>
 </body>
 </html>
