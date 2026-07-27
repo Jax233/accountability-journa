@@ -76,17 +76,20 @@
     }
     btn.disabled = true;
     btn.textContent = 'Sending...';
-    const { error } = await sb.auth.signInWithOtp({
-      email: userEmail,
+    const emailInput = document.getElementById('email').value; // Get the typed email
+
+const { data, error } = await supabase.auth.signInWithOtp({
+  email: emailInput, // Pass the actual input value
   options: {
-    shouldCreateUser: false // This blocks anyone not pre-added in Supabase
+    shouldCreateUser: false // 
   }
 });
 
 if (error) {
-  alert("Access denied. This email is not authorized for the trial.");
+  console.error('Error sending link:', error.message);
+  alert(error.message);
 } else {
-  alert("Check your email for the magic link!");
+  alert('Magic link sent! Check your inbox.');
 }
     document.getElementById('form-state').classList.add('hidden');
     document.getElementById('sent-state').classList.remove('hidden');
