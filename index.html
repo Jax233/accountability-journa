@@ -24,12 +24,12 @@
   ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
 
   .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
-  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); transform: translateY(-1px); }
+  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); }
   .btn-ghost { border:1.5px solid #dc2626; color:#f87171; background: rgba(220,38,38,0.04); transition: all .18s ease; }
   .btn-ghost:hover { background: rgba(220,38,38,0.12); box-shadow: 0 0 20px rgba(220,38,38,0.25); }
   .card { background:#0a0a0b; border:1px solid #18181b; }
 
-  .day-cell { transition: all .15s ease; }
+  .day-cell { transition: all .15s ease; cursor: pointer; }
   .day-cell:hover:not(.day-empty) { background:#18181b; }
   .day-cell.has-log::after {
     content:''; position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
@@ -122,12 +122,40 @@
       </a>
     </div>
   </div>
+
+  <!-- Date Action Modal -->
+  <div id="date-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-4">
+    <div class="card w-full max-w-sm rounded-2xl p-5 relative border border-zinc-800 space-y-4">
+      <button id="btn-close-modal" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div>
+        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em]">Select Entry Type</p>
+        <h3 id="modal-date-title" class="font-black italic uppercase text-lg leading-tight text-white mt-0.5"></h3>
+      </div>
+
+      <div class="space-y-2.5 pt-1">
+        <a id="modal-link-journal" href="#" class="btn-primary flex items-center justify-between w-full text-white font-black italic uppercase tracking-wide text-xs py-3.5 px-4 rounded-xl">
+          <span>Daily Journal</span>
+          <span id="badge-journal" class="text-[10px] bg-black/40 px-2 py-0.5 rounded font-medium text-zinc-300"></span>
+        </a>
+
+        <a id="modal-link-training" href="#" class="btn-ghost flex items-center justify-between w-full font-black italic uppercase tracking-wide text-xs py-3.5 px-4 rounded-xl">
+          <span>Training Log</span>
+          <span id="badge-training" class="text-[10px] bg-black/40 px-2 py-0.5 rounded font-medium text-zinc-300"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="config.js"></script>
 <script>
 (async function(){
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const WEEKDAYS = ['S','M','T','W','T','F','S'];
 
   const session = await requireSession();
@@ -141,6 +169,8 @@
     return `${y}-${m}-${day}`;
   }
   function todayStr(){ return fmtDate(new Date()); }
+  function parseDate(str){ const [y,m,d] = str.split('-').map(Number); return new Date(y, m-1, d); }
+  function humanDate(str){ const d = parseDate(str); return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
 
   async function loadData(){
     const { data: entries, error: e1 } = await sb.from('entries').select('*').eq('user_id', session.user.id);
@@ -183,6 +213,28 @@
     }
   }
 
+  function openDateModal(dateKey){
+    document.getElementById('modal-date-title').textContent = humanDate(dateKey);
+    
+    const journalLink = document.getElementById('modal-link-journal');
+    const trainingLink = document.getElementById('modal-link-training');
+    
+    journalLink.href = `daily-entry.html?date=${dateKey}`;
+    trainingLink.href = `training-log.html?date=${dateKey}`;
+
+    const hasJournal = !!db.entries[dateKey];
+    const hasTraining = !!(db.trainings[dateKey] && db.trainings[dateKey].length > 0);
+
+    document.getElementById('badge-journal').textContent = hasJournal ? 'Logged ✓' : 'New';
+    document.getElementById('badge-training').textContent = hasTraining ? `${db.trainings[dateKey].length} Logged ✓` : 'New';
+
+    document.getElementById('date-modal').classList.remove('hidden');
+  }
+
+  document.getElementById('btn-close-modal').addEventListener('click', ()=>{
+    document.getElementById('date-modal').classList.add('hidden');
+  });
+
   function renderCalendar(){
     document.getElementById('cal-month-label').textContent = `${MONTHS[calViewDate.getMonth()]} ${calViewDate.getFullYear()}`;
     document.getElementById('cal-weekdays').innerHTML = WEEKDAYS.map(w => `<div class="text-center text-[10px] font-bold text-zinc-600 uppercase py-1">${w}</div>`).join('');
@@ -201,14 +253,17 @@
     }
     for(let day=1; day<=daysInMonth; day++){
       const key = fmtDate(new Date(year, month, day));
-      const cell = document.createElement('a');
+      const cell = document.createElement('div');
       const hasLog = !!(db.entries[key] || db.trainings[key]);
       let cls = 'day-cell relative h-10 rounded-lg flex items-center justify-center text-sm font-semibold text-zinc-300';
       if(hasLog) cls += ' has-log';
       if(key === today) cls += ' is-today text-white';
       cell.className = cls;
       cell.textContent = day;
-      cell.href = `daily-entry.html?date=${key}`;
+      
+      // Open modal on click
+      cell.addEventListener('click', ()=> openDateModal(key));
+      
       grid.appendChild(cell);
     }
   }
