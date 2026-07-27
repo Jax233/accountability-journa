@@ -92,13 +92,13 @@
           <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Reflection
         </h3>
         
-        <!-- Concept Banner (Visible when logged from Flow Map) -->
-        <div id="concept-context-box" class="hidden bg-zinc-950 rounded-xl p-3 border border-red-950 mb-4">
-          <p class="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1">Target Concept (Background Process)</p>
-          <p id="concept-context-text" class="text-xs text-zinc-300 italic leading-relaxed"></p>
+        <!-- Context Header (Shows Primary Position & Technique Focus) -->
+        <div id="concept-context-box" class="hidden bg-zinc-950 rounded-xl p-3.5 border border-red-900/60 mb-4">
+          <p id="primary-pos-badge" class="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1"></p>
+          <p id="concept-context-text" class="text-xs text-zinc-200 font-medium leading-relaxed"></p>
         </div>
 
-        <label id="learned-question-label" class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">What Did You Learn?</label>
+        <label id="learned-question-label" class="block text-[11px] font-bold uppercase tracking-wide text-zinc-400 mb-1.5">What Did You Learn?</label>
         <textarea id="t-learned" rows="3" placeholder="How did the background process affect your rolls today?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
 
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Follow-Up Questions</label>
@@ -154,27 +154,35 @@
   const selectedDate = getParam('date') || todayStr();
   const autoFocusTechnique = getParam('focus');
   const autoConcept = getParam('concept');
+  const autoPrimaryPos = getParam('primary');
 
   document.getElementById('training-date-title').textContent = humanDate(selectedDate);
 
-  // Dynamically tailor Reflection based on the selected Concept
+  // Auto-populate Technique Focus with Primary Position context
   if (autoFocusTechnique) {
-    document.getElementById('t-focus').value = decodeURIComponent(autoFocusTechnique);
+    const focusVal = decodeURIComponent(autoFocusTechnique);
+    const primVal = autoPrimaryPos ? decodeURIComponent(autoPrimaryPos) : '';
+    document.getElementById('t-focus').value = primVal ? `${primVal} → ${focusVal}` : focusVal;
   }
 
+  // Build specific, concept-driven reflection question
   if (autoConcept) {
-    const conceptText = decodeURIComponent(autoConcept);
-    
-    // Display concept banner
-    document.getElementById('concept-context-box').classList.remove('hidden');
-    document.getElementById('concept-context-text').textContent = conceptText;
+    const rawConcept = decodeURIComponent(autoConcept);
+    const cleanProcess = rawConcept.replace(/^Background Process:\s*/i, '');
+    const primText = autoPrimaryPos ? decodeURIComponent(autoPrimaryPos) : 'Target Position';
+    const techText = autoFocusTechnique ? decodeURIComponent(autoFocusTechnique) : '';
 
-    // Tailor the "What Did You Learn?" question and placeholder dynamically
+    // Show context box
+    document.getElementById('concept-context-box').classList.remove('hidden');
+    document.getElementById('primary-pos-badge').textContent = `${primText} ${techText ? '• ' + techText : ''}`;
+    document.getElementById('concept-context-text').textContent = cleanProcess;
+
+    // Build specific prompt
     const questionLabel = document.getElementById('learned-question-label');
     const learnedInput = document.getElementById('t-learned');
 
-    questionLabel.textContent = `Concept Reflection: ${decodeURIComponent(autoFocusTechnique)}`;
-    learnedInput.placeholder = `Focus question: Did you successfully control the background process? (${conceptText})`;
+    questionLabel.textContent = `Mechanical Focus Question`;
+    learnedInput.placeholder = `Did you win or lose this fight? (Focus: ${cleanProcess})`;
   }
 
   const { data: sessions, error } = await sb
