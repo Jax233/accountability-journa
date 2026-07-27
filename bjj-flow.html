@@ -30,34 +30,37 @@
     backdrop-filter: blur(10px);
     border: 1px solid #18181b;
   }
+
+  .btn-primary { background:#dc2626; box-shadow: 0 0 16px rgba(220,38,38,0.35); transition: all .18s ease; }
+  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 24px rgba(220,38,38,0.55); }
 </style>
 </head>
 <body class="bg-black text-zinc-100">
 <div class="max-w-md mx-auto h-screen bg-black flex flex-col relative border-x border-zinc-900">
 
-  <!-- Sticky Top Bar -->
+  <!-- Header -->
   <div class="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-zinc-900 px-5 py-4 flex items-center gap-3">
     <a href="training-log.html" class="w-9 h-9 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-300 hover:text-red-500 transition">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
     </a>
     <div class="flex-1">
       <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Tactical System</p>
-      <h2 class="font-black italic uppercase text-base leading-tight">Technique Hierarchy Map</h2>
+      <h2 class="font-black italic uppercase text-base leading-tight">Technique Stack</h2>
     </div>
     <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
   </div>
 
-  <!-- Flow Area -->
+  <!-- Main Canvas Section -->
   <div class="relative flex-1">
     
-    <!-- Floating Search Bar -->
+    <!-- Floating Search -->
     <div class="absolute top-4 left-4 right-4 z-20">
       <div class="control-pill rounded-xl p-2 shadow-2xl flex items-center gap-2">
         <svg class="w-4 h-4 text-zinc-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <input 
           id="search-nodes" 
           type="text" 
-          placeholder="Search position or submission..." 
+          placeholder="Search technique or position..." 
           class="w-full bg-transparent text-xs font-medium text-zinc-100 placeholder-zinc-500 focus:outline-none"
         />
         <button id="btn-reset-view" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 rounded transition">
@@ -66,21 +69,38 @@
       </div>
     </div>
 
-    <!-- Canvas -->
     <div id="network-container"></div>
 
     <!-- Floating Legend -->
-    <div class="absolute bottom-4 left-4 right-4 z-20">
+    <div id="legend-bar" class="absolute bottom-4 left-4 right-4 z-20">
       <div class="control-pill rounded-xl p-3 flex items-center justify-around text-[10px] font-bold uppercase tracking-wider text-zinc-300">
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded bg-red-600 border border-red-400 text-white flex items-center justify-center text-[7px] font-black">1</span> Primary Position
+          <span class="w-3 h-3 rounded bg-red-600 border border-red-400 text-white flex items-center justify-center text-[7px] font-black">1</span> Position
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded bg-white text-black flex items-center justify-center text-[7px] font-black">2</span> Transition / Pass
+          <span class="w-3 h-3 rounded bg-white text-black flex items-center justify-center text-[7px] font-black">2</span> Transition
         </div>
         <div class="flex items-center gap-1.5">
           <span class="w-3 h-3 rounded bg-red-600 text-black flex items-center justify-center text-[7px] font-black">3</span> Submission
         </div>
+      </div>
+    </div>
+
+    <!-- Sliding Detail Drawer -->
+    <div id="detail-drawer" class="hidden absolute bottom-4 left-4 right-4 z-30 transition-all transform translate-y-0">
+      <div class="control-pill rounded-xl p-4 shadow-2xl relative border border-zinc-800">
+        <button id="btn-close-drawer" class="absolute top-3 right-3 text-zinc-500 hover:text-white p-1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+
+        <p id="drawer-category" class="text-[9px] text-red-600 font-bold uppercase tracking-[0.2em]">Technique Detail</p>
+        <h3 id="drawer-title" class="text-base font-black italic uppercase text-white mb-1"></h3>
+        <p id="drawer-desc" class="text-xs text-zinc-400 mb-3 leading-snug"></p>
+
+        <a id="drawer-yt-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-white font-black italic uppercase text-xs tracking-wide">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          Watch Tutorial Video →
+        </a>
       </div>
     </div>
 
@@ -89,12 +109,11 @@
 
 <script>
 (function(){
-  // Reusable node styling definitions
   const stylePrimary = {
     shape: 'box',
     margin: 12,
     color: { background: '#dc2626', border: '#f87171' },
-    font: { color: '#ffffff', face: 'Inter', weight: '900', size: 12 },
+    font: { color: '#ffffff', face: 'Inter', weight: '900', size: 13 },
     shapeProperties: { borderRadius: 8 }
   };
 
@@ -114,54 +133,47 @@
     shapeProperties: { borderRadius: 6 }
   };
 
-  // Hierarchy Structure
+  // Stacked sequentially top-to-bottom starting with Open Guard
   const nodes = new vis.DataSet([
-    // Level 1: Core Positions
-    { id: 'cg', label: 'CLOSED GUARD', level: 0, ...stylePrimary },
-    { id: 'og', label: 'OPEN GUARD', level: 0, ...stylePrimary },
-    { id: 'sc', label: 'SIDE CONTROL', level: 0, ...stylePrimary },
-    { id: 'm',  label: 'MOUNT', level: 0, ...stylePrimary },
-    { id: 'bc', label: 'BACK CONTROL', level: 0, ...stylePrimary },
+    // 1. OPEN GUARD (LEVEL 0)
+    { id: 'og', label: '1. OPEN GUARD', level: 0, category: 'Primary Position', desc: 'Maintain distance, feet on hips/biceps, double sleeve or collar control.', yt: 'https://www.youtube.com/results?search_query=bjj+open+guard+concepts', ...stylePrimary },
+    { id: 'og_dlr', label: 'De La Riva Guard', level: 1, category: 'Transition', desc: 'Outside hook around ankle with collar/sleeve control.', yt: 'https://www.youtube.com/results?search_query=bjj+de+la+riva+guard+basics', ...styleTransition },
+    { id: 'og_spider', label: 'Spider Guard', level: 1, category: 'Transition', desc: 'Feet on biceps with sleeve grips to stretch opponent.', yt: 'https://www.youtube.com/results?search_query=bjj+spider+guard+sweeps', ...styleTransition },
+    { id: 'og_tripod', label: 'Tripod Sweep', level: 1, category: 'Transition', desc: 'Foot on hip, hook behind knee, pull ankle.', yt: 'https://www.youtube.com/results?search_query=bjj+tripod+sweep', ...styleTransition },
 
-    // Level 2: Closed Guard Breakdown
-    { id: 'cg_armbar', label: 'Armbar', level: 1, ...styleSubmission },
-    { id: 'cg_triangle', label: 'Triangle Choke', level: 1, ...styleSubmission },
-    { id: 'cg_kimura', label: 'Kimura', level: 1, ...styleSubmission },
-    { id: 'cg_sweep', label: 'Hip Heist Sweep', level: 1, ...styleTransition },
+    // 2. CLOSED GUARD (LEVEL 2)
+    { id: 'cg', label: '2. CLOSED GUARD', level: 2, category: 'Primary Position', desc: 'Control hips, break posture, and establish guard control.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+fundamentals', ...stylePrimary },
+    { id: 'cg_armbar', label: 'Armbar', level: 3, category: 'Submission', desc: 'Climb guard, pivot 90 degrees, break posture, clamp down.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+armbar', ...styleSubmission },
+    { id: 'cg_triangle', label: 'Triangle Choke', level: 3, category: 'Submission', desc: 'One arm in, one arm out. Lock figure-four across neck.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+triangle+choke', ...styleSubmission },
+    { id: 'cg_kimura', label: 'Kimura', level: 3, category: 'Submission', desc: 'Break wrist grip, sit up, grab figure-four on arm.', yt: 'https://www.youtube.com/results?search_query=bjj+closed+guard+kimura', ...styleSubmission },
 
-    // Level 2: Open Guard Breakdown
-    { id: 'og_dlr', label: 'De La Riva Guard', level: 1, ...styleTransition },
-    { id: 'og_spider', label: 'Spider Guard', level: 1, ...styleTransition },
-    { id: 'og_tripod', label: 'Tripod Sweep', level: 1, ...styleTransition },
+    // 3. SIDE CONTROL (LEVEL 4)
+    { id: 'sc', label: '3. SIDE CONTROL', level: 4, category: 'Primary Position', desc: 'Cross-face pressure, underhook, and heavy weight distribution.', yt: 'https://www.youtube.com/results?search_query=bjj+side+control+pressure', ...stylePrimary },
+    { id: 'sc_kimuratrap', label: 'Kimura Trap', level: 5, category: 'Transition', desc: 'Isolate arm for back takes, armbars, or submissions.', yt: 'https://www.youtube.com/results?search_query=bjj+kimura+trap+system', ...styleTransition },
+    { id: 'sc_papercutter', label: 'Paper Cutter Choke', level: 5, category: 'Submission', desc: 'Deep lapel grip with forearm dropping down across throat.', yt: 'https://www.youtube.com/results?search_query=bjj+paper+cutter+choke', ...styleSubmission },
+    { id: 'sc_armtriangle', label: 'Arm Triangle', level: 5, category: 'Submission', desc: 'Trap opponent arm across neck, dismount to side, squeeze.', yt: 'https://www.youtube.com/results?search_query=bjj+arm+triangle+finish', ...styleSubmission },
 
-    // Level 2: Side Control Breakdown
-    { id: 'sc_kimuratrap', label: 'Kimura Trap', level: 1, ...styleTransition },
-    { id: 'sc_papercutter', label: 'Paper Cutter Choke', level: 1, ...styleSubmission },
-    { id: 'sc_armtriangle', label: 'Arm Triangle', level: 1, ...styleSubmission },
+    // 4. MOUNT (LEVEL 6)
+    { id: 'm', label: '4. MOUNT', level: 6, category: 'Primary Position', desc: 'High mount isolation and heavy hips.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+control+and+attacks', ...stylePrimary },
+    { id: 'm_armbar', label: 'S-Mount Armbar', level: 7, category: 'Submission', desc: 'Slide into high S-mount, isolate far arm, swing leg over.', yt: 'https://www.youtube.com/results?search_query=bjj+s+mount+armbar', ...styleSubmission },
+    { id: 'm_collar', label: 'Cross Collar Choke', level: 7, category: 'Submission', desc: 'Deep cross-collar grip, opening palm, drop head down.', yt: 'https://www.youtube.com/results?search_query=bjj+mount+cross+collar+choke', ...styleSubmission },
 
-    // Level 2: Mount Breakdown
-    { id: 'm_armbar', label: 'S-Mount Armbar', level: 1, ...styleSubmission },
-    { id: 'm_collar', label: 'Cross Collar Choke', level: 1, ...styleSubmission },
-    { id: 'm_backtake', label: 'Gift Wrap Back Take', level: 1, ...styleTransition },
-
-    // Level 2: Back Control Breakdown
-    { id: 'bc_rnc', label: 'Rear Naked Choke', level: 1, ...styleSubmission },
-    { id: 'bc_bow', label: 'Bow & Arrow Choke', level: 1, ...styleSubmission },
-    { id: 'bc_armbar', label: 'Back Armbar', level: 1, ...styleSubmission }
+    // 5. BACK CONTROL (LEVEL 8)
+    { id: 'bc', label: '5. BACK CONTROL', level: 8, category: 'Primary Position', desc: 'Seatbelt grip, hooks in, and head positioning.', yt: 'https://www.youtube.com/results?search_query=bjj+back+control+system', ...stylePrimary },
+    { id: 'bc_rnc', label: 'Rear Naked Choke', level: 9, category: 'Submission', desc: 'Biceps-to-biceps lock, hide hand behind head, squeeze elbows.', yt: 'https://www.youtube.com/results?search_query=bjj+rear+naked+choke+finish', ...styleSubmission },
+    { id: 'bc_bow', label: 'Bow & Arrow Choke', level: 9, category: 'Submission', desc: 'Deep lapel grip, grab pant leg, extend hips and pull.', yt: 'https://www.youtube.com/results?search_query=bjj+bow+and+arrow+choke', ...styleSubmission }
   ]);
 
-  // Directed Connections from Parent Positions down to Breakdowns
   const edges = new vis.DataSet([
-    // Closed Guard branches
-    { from: 'cg', to: 'cg_armbar' },
-    { from: 'cg', to: 'cg_triangle' },
-    { from: 'cg', to: 'cg_kimura' },
-    { from: 'cg', to: 'cg_sweep' },
-
     // Open Guard branches
     { from: 'og', to: 'og_dlr' },
     { from: 'og', to: 'og_spider' },
     { from: 'og', to: 'og_tripod' },
+
+    // Closed Guard branches
+    { from: 'cg', to: 'cg_armbar' },
+    { from: 'cg', to: 'cg_triangle' },
+    { from: 'cg', to: 'cg_kimura' },
 
     // Side Control branches
     { from: 'sc', to: 'sc_kimuratrap' },
@@ -171,12 +183,10 @@
     // Mount branches
     { from: 'm', to: 'm_armbar' },
     { from: 'm', to: 'm_collar' },
-    { from: 'm', to: 'm_backtake' },
 
     // Back Control branches
     { from: 'bc', to: 'bc_rnc' },
-    { from: 'bc', to: 'bc_bow' },
-    { from: 'bc', to: 'bc_armbar' }
+    { from: 'bc', to: 'bc_bow' }
   ]);
 
   const container = document.getElementById('network-container');
@@ -186,29 +196,55 @@
     layout: {
       hierarchical: {
         enabled: true,
-        direction: 'UD', // Top-Down layout
+        direction: 'UD', // Top-down vertical stack
         sortMethod: 'directed',
-        nodeSpacing: 140,
-        levelSeparation: 120
+        nodeSpacing: 100,
+        levelSeparation: 90
       }
     },
-    physics: {
-      enabled: false // Disables floating physics entirely
-    },
+    physics: { enabled: false },
     edges: {
-      arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+      arrows: { to: { enabled: true, scaleFactor: 0.5 } },
       color: { color: '#dc2626', highlight: '#ef4444' },
       width: 1.5,
       smooth: { type: 'cubicBezier', forceDirection: 'vertical' }
     },
-    interaction: {
-      hover: true,
-      zoomView: true,
-      dragView: true
-    }
+    interaction: { hover: true, zoomView: true, dragView: true }
   };
 
   const network = new vis.Network(container, data, options);
+
+  // Drawer elements
+  const legendBar = document.getElementById('legend-bar');
+  const detailDrawer = document.getElementById('detail-drawer');
+  const drawerCategory = document.getElementById('drawer-category');
+  const drawerTitle = document.getElementById('drawer-title');
+  const drawerDesc = document.getElementById('drawer-desc');
+  const drawerYtLink = document.getElementById('drawer-yt-link');
+  const btnCloseDrawer = document.getElementById('btn-close-drawer');
+
+  // Handle tap on nodes
+  network.on('click', (params) => {
+    if(params.nodes.length > 0){
+      const nodeId = params.nodes[0];
+      const item = nodes.get(nodeId);
+      
+      if(item){
+        drawerCategory.textContent = item.category || 'Technique Detail';
+        drawerTitle.textContent = item.label;
+        drawerDesc.textContent = item.desc || 'Tactical position or submission.';
+        drawerYtLink.href = item.yt || `https://www.youtube.com/results?search_query=bjj+${encodeURIComponent(item.label)}`;
+        
+        legendBar.classList.add('hidden');
+        detailDrawer.classList.remove('hidden');
+      }
+    }
+  });
+
+  btnCloseDrawer.addEventListener('click', () => {
+    detailDrawer.classList.add('hidden');
+    legendBar.classList.remove('hidden');
+  });
 
   // Search logic
   const searchInput = document.getElementById('search-nodes');
@@ -227,6 +263,8 @@
 
   document.getElementById('btn-reset-view').addEventListener('click', () => {
     searchInput.value = '';
+    detailDrawer.classList.add('hidden');
+    legendBar.classList.remove('hidden');
     network.fit({ animation: { duration: 400 } });
   });
 
