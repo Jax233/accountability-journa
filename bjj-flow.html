@@ -18,10 +18,6 @@
 <style>
   * { font-family: 'Inter', sans-serif; }
   html, body { background:#000; overflow: hidden; }
-  .card { background:#0a0a0b; border:1px solid #18181b; }
-  .input-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
-  .input-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18), 0 0 18px rgba(220,38,38,0.25); }
-  .input-field::placeholder { color:#52525b; }
   
   #network-container {
     width: 100%;
@@ -30,8 +26,8 @@
   }
 
   .control-pill {
-    background: rgba(10, 10, 11, 0.85);
-    backdrop-filter: blur(8px);
+    background: rgba(10, 10, 11, 0.90);
+    backdrop-filter: blur(10px);
     border: 1px solid #18181b;
   }
 </style>
@@ -39,19 +35,19 @@
 <body class="bg-black text-zinc-100">
 <div class="max-w-md mx-auto h-screen bg-black flex flex-col relative border-x border-zinc-900">
 
-  <!-- Header -->
+  <!-- Sticky Top Bar -->
   <div class="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-zinc-900 px-5 py-4 flex items-center gap-3">
     <a href="training-log.html" class="w-9 h-9 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-300 hover:text-red-500 transition">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
     </a>
     <div class="flex-1">
       <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Tactical System</p>
-      <h2 class="font-black italic uppercase text-base leading-tight">Technique Flow Map</h2>
+      <h2 class="font-black italic uppercase text-base leading-tight">Technique Hierarchy Map</h2>
     </div>
     <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
   </div>
 
-  <!-- Main Mindmap Container -->
+  <!-- Flow Area -->
   <div class="relative flex-1">
     
     <!-- Floating Search Bar -->
@@ -73,17 +69,17 @@
     <!-- Canvas -->
     <div id="network-container"></div>
 
-    <!-- Floating Legend Bar -->
+    <!-- Floating Legend -->
     <div class="absolute bottom-4 left-4 right-4 z-20">
       <div class="control-pill rounded-xl p-3 flex items-center justify-around text-[10px] font-bold uppercase tracking-wider text-zinc-300">
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-full bg-red-600 border border-white flex items-center justify-center text-[7px] text-white font-black">A</span> Primary Position
+          <span class="w-3 h-3 rounded bg-red-600 border border-red-400 text-white flex items-center justify-center text-[7px] font-black">1</span> Primary Position
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded bg-white text-black flex items-center justify-center text-[7px] font-black">B</span> Transition / Pass
+          <span class="w-3 h-3 rounded bg-white text-black flex items-center justify-center text-[7px] font-black">2</span> Transition / Pass
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-full bg-red-600 text-black flex items-center justify-center text-[7px] font-black">C</span> Submission
+          <span class="w-3 h-3 rounded bg-red-600 text-black flex items-center justify-center text-[7px] font-black">3</span> Submission
         </div>
       </div>
     </div>
@@ -93,69 +89,117 @@
 
 <script>
 (function(){
-  // Reusable node styles according to requested spec
+  // Reusable node styling definitions
   const stylePrimary = {
-    shape: 'ellipse',
-    color: { background: '#dc2626', border: '#ef4444' },
-    font: { color: '#ffffff', face: 'Inter', weight: '900', size: 13 }
-  };
-
-  const styleSubmission = {
-    shape: 'ellipse',
-    color: { background: '#dc2626', border: '#b91c1c' },
-    font: { color: '#000000', face: 'Inter', weight: '900', size: 12 }
+    shape: 'box',
+    margin: 12,
+    color: { background: '#dc2626', border: '#f87171' },
+    font: { color: '#ffffff', face: 'Inter', weight: '900', size: 12 },
+    shapeProperties: { borderRadius: 8 }
   };
 
   const styleTransition = {
     shape: 'box',
+    margin: 10,
     color: { background: '#ffffff', border: '#e4e4e7' },
-    font: { color: '#000000', face: 'Inter', weight: '800', size: 11 }
+    font: { color: '#000000', face: 'Inter', weight: '800', size: 11 },
+    shapeProperties: { borderRadius: 6 }
   };
 
+  const styleSubmission = {
+    shape: 'box',
+    margin: 10,
+    color: { background: '#dc2626', border: '#7f1d1d' },
+    font: { color: '#000000', face: 'Inter', weight: '900', size: 11 },
+    shapeProperties: { borderRadius: 6 }
+  };
+
+  // Hierarchy Structure
   const nodes = new vis.DataSet([
-    // Primary Positions (Red BG + White Text)
-    { id: 1, label: 'CLOSED GUARD', ...stylePrimary },
-    { id: 2, label: 'OPEN GUARD', ...stylePrimary },
-    { id: 3, label: 'SIDE CONTROL', ...stylePrimary },
-    { id: 4, label: 'MOUNT', ...stylePrimary },
-    { id: 5, label: 'BACK CONTROL', ...stylePrimary },
-    
-    // Transitions & Passes (White Box + Black Text)
-    { id: 6, label: 'De La Riva Guard', ...styleTransition },
-    { id: 7, label: 'Kimura Trap', ...styleTransition },
-    
-    // Submissions (Red BG + Black Text)
-    { id: 8, label: 'Armbar', ...styleSubmission },
-    { id: 9, label: 'Triangle Choke', ...styleSubmission },
-    { id: 10, label: 'Rear Naked Choke', ...styleSubmission },
-    { id: 11, label: 'Cross Collar Choke', ...styleSubmission }
+    // Level 1: Core Positions
+    { id: 'cg', label: 'CLOSED GUARD', level: 0, ...stylePrimary },
+    { id: 'og', label: 'OPEN GUARD', level: 0, ...stylePrimary },
+    { id: 'sc', label: 'SIDE CONTROL', level: 0, ...stylePrimary },
+    { id: 'm',  label: 'MOUNT', level: 0, ...stylePrimary },
+    { id: 'bc', label: 'BACK CONTROL', level: 0, ...stylePrimary },
+
+    // Level 2: Closed Guard Breakdown
+    { id: 'cg_armbar', label: 'Armbar', level: 1, ...styleSubmission },
+    { id: 'cg_triangle', label: 'Triangle Choke', level: 1, ...styleSubmission },
+    { id: 'cg_kimura', label: 'Kimura', level: 1, ...styleSubmission },
+    { id: 'cg_sweep', label: 'Hip Heist Sweep', level: 1, ...styleTransition },
+
+    // Level 2: Open Guard Breakdown
+    { id: 'og_dlr', label: 'De La Riva Guard', level: 1, ...styleTransition },
+    { id: 'og_spider', label: 'Spider Guard', level: 1, ...styleTransition },
+    { id: 'og_tripod', label: 'Tripod Sweep', level: 1, ...styleTransition },
+
+    // Level 2: Side Control Breakdown
+    { id: 'sc_kimuratrap', label: 'Kimura Trap', level: 1, ...styleTransition },
+    { id: 'sc_papercutter', label: 'Paper Cutter Choke', level: 1, ...styleSubmission },
+    { id: 'sc_armtriangle', label: 'Arm Triangle', level: 1, ...styleSubmission },
+
+    // Level 2: Mount Breakdown
+    { id: 'm_armbar', label: 'S-Mount Armbar', level: 1, ...styleSubmission },
+    { id: 'm_collar', label: 'Cross Collar Choke', level: 1, ...styleSubmission },
+    { id: 'm_backtake', label: 'Gift Wrap Back Take', level: 1, ...styleTransition },
+
+    // Level 2: Back Control Breakdown
+    { id: 'bc_rnc', label: 'Rear Naked Choke', level: 1, ...styleSubmission },
+    { id: 'bc_bow', label: 'Bow & Arrow Choke', level: 1, ...styleSubmission },
+    { id: 'bc_armbar', label: 'Back Armbar', level: 1, ...styleSubmission }
   ]);
 
+  // Directed Connections from Parent Positions down to Breakdowns
   const edges = new vis.DataSet([
-    { from: 1, to: 8, arrows: 'to', color: { color: '#dc2626' } },
-    { from: 1, to: 9, arrows: 'to', color: { color: '#dc2626' } },
-    { from: 1, to: 2, arrows: 'to', color: { color: '#ffffff' } },
-    { from: 2, to: 6, arrows: 'to', color: { color: '#ffffff' } },
-    { from: 6, to: 3, arrows: 'to', color: { color: '#ffffff' } },
-    { from: 3, to: 4, arrows: 'to', color: { color: '#ffffff' } },
-    { from: 3, to: 7, arrows: 'to', color: { color: '#ffffff' } },
-    { from: 7, to: 5, arrows: 'to', color: { color: '#dc2626' } },
-    { from: 4, to: 11, arrows: 'to', color: { color: '#dc2626' } },
-    { from: 5, to: 10, arrows: 'to', color: { color: '#dc2626' } }
+    // Closed Guard branches
+    { from: 'cg', to: 'cg_armbar' },
+    { from: 'cg', to: 'cg_triangle' },
+    { from: 'cg', to: 'cg_kimura' },
+    { from: 'cg', to: 'cg_sweep' },
+
+    // Open Guard branches
+    { from: 'og', to: 'og_dlr' },
+    { from: 'og', to: 'og_spider' },
+    { from: 'og', to: 'og_tripod' },
+
+    // Side Control branches
+    { from: 'sc', to: 'sc_kimuratrap' },
+    { from: 'sc', to: 'sc_papercutter' },
+    { from: 'sc', to: 'sc_armtriangle' },
+
+    // Mount branches
+    { from: 'm', to: 'm_armbar' },
+    { from: 'm', to: 'm_collar' },
+    { from: 'm', to: 'm_backtake' },
+
+    // Back Control branches
+    { from: 'bc', to: 'bc_rnc' },
+    { from: 'bc', to: 'bc_bow' },
+    { from: 'bc', to: 'bc_armbar' }
   ]);
 
   const container = document.getElementById('network-container');
   const data = { nodes: nodes, edges: edges };
-  
+
   const options = {
-    physics: {
-      solver: 'forceAtlas2Based',
-      forceAtlas2Based: {
-        gravitationalConstant: -40,
-        centralGravity: 0.01,
-        springLength: 110,
-        springConstant: 0.08
+    layout: {
+      hierarchical: {
+        enabled: true,
+        direction: 'UD', // Top-Down layout
+        sortMethod: 'directed',
+        nodeSpacing: 140,
+        levelSeparation: 120
       }
+    },
+    physics: {
+      enabled: false // Disables floating physics entirely
+    },
+    edges: {
+      arrows: { to: { enabled: true, scaleFactor: 0.6 } },
+      color: { color: '#dc2626', highlight: '#ef4444' },
+      width: 1.5,
+      smooth: { type: 'cubicBezier', forceDirection: 'vertical' }
     },
     interaction: {
       hover: true,
@@ -166,23 +210,24 @@
 
   const network = new vis.Network(container, data, options);
 
+  // Search logic
   const searchInput = document.getElementById('search-nodes');
   searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase().trim();
     if(!term){
-      network.fit({ animation: { duration: 500 } });
+      network.fit({ animation: { duration: 400 } });
       return;
     }
 
     const matches = nodes.get().filter(n => n.label.toLowerCase().includes(term));
     if(matches.length > 0){
-      network.focus(matches[0].id, { scale: 1.2, animation: { duration: 400 } });
+      network.focus(matches[0].id, { scale: 1.2, animation: { duration: 300 } });
     }
   });
 
   document.getElementById('btn-reset-view').addEventListener('click', () => {
     searchInput.value = '';
-    network.fit({ animation: { duration: 500 } });
+    network.fit({ animation: { duration: 400 } });
   });
 
 })();
