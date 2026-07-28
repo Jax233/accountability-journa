@@ -6,7 +6,7 @@
 <title>I SEE YOU & YOU ARE PERFECT</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="I SEE YOU">
 <meta name="theme-color" content="#000000">
@@ -56,30 +56,34 @@
   <div id="app-content" class="flex-1 overflow-y-auto hidden">
     <div class="px-5 pt-8 pb-4 flex items-start justify-between">
       <div class="flex items-center gap-3">
-        <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-12 w-auto shrink-0">
+        <img src="logo-bird-only-v2.png" alt="I See You" class="h-12 w-auto shrink-0">
         <div>
           <p class="text-red-600 text-[11px] font-bold tracking-[0.3em] uppercase mb-1">Discipline Over Comfort</p>
           <h1 class="text-2xl font-black italic uppercase tracking-tight leading-none">I See You &amp;<br>You Are Perfect</h1>
         </div>
       </div>
-      <button id="btn-signout" class="text-zinc-500 hover:text-red-500 text-[10px] font-bold uppercase tracking-wide mt-2 transition">Sign Out</button>
+      <div class="flex flex-col items-end gap-1">
+        <a href="profile.html" class="text-zinc-400 hover:text-white text-[10px] font-bold uppercase tracking-wide transition">Profile ⚙️</a>
+        <button id="btn-signout" class="text-zinc-500 hover:text-red-500 text-[10px] font-bold uppercase tracking-wide transition">Sign Out</button>
+      </div>
     </div>
 
-    <!-- Streak Banner -->
+    <!-- Streak & Rank Banner -->
     <div class="mx-5 mb-5 card rounded-xl p-5 relative overflow-hidden">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-3">
         <div>
           <div class="flex items-baseline gap-2">
             <span id="streak-number" class="text-5xl font-black italic text-white">0</span>
             <span class="text-red-600 text-xl">🔥</span>
           </div>
-          <p id="streak-label" class="text-zinc-400 text-xs font-semibold uppercase tracking-wide mt-1">Days of Radical Accountability</p>
+          <p id="streak-label" class="text-zinc-400 text-xs font-semibold uppercase tracking-wide mt-1">Days of Discipline</p>
         </div>
         <div class="text-right">
-          <p class="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Belt Cycle</p>
-          <p id="belt-cycle" class="text-lg font-black italic text-red-500">01</p>
+          <p id="user-belt-badge" class="text-[10px] text-zinc-400 font-bold uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-2.5 py-1 rounded-full mb-1">White Belt</p>
+          <p class="text-[9px] text-zinc-600 uppercase tracking-widest font-bold">Belt Cycle <span id="belt-cycle" class="text-red-500 font-black">01</span></p>
         </div>
       </div>
+
       <div class="bg-black rounded-lg border border-zinc-800 px-4 py-3">
         <div class="flex items-center gap-2">
           <div class="flex-1 h-2.5 bg-zinc-900 rounded-full"></div>
@@ -116,9 +120,6 @@
     <div class="px-5 pb-10 text-center space-y-2">
       <a href="weekly-summary.html" class="block text-zinc-400 hover:text-red-500 text-xs font-bold uppercase tracking-widest transition">
         View Weekly Summary →
-      </a>
-      <a href="feedback.html" class="block text-zinc-600 hover:text-red-500 text-xs font-bold uppercase tracking-widest transition">
-        Send Feedback
       </a>
     </div>
   </div>
@@ -173,13 +174,18 @@
   function humanDate(str){ const d = parseDate(str); return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
 
   async function loadData(){
-    const { data: entries, error: e1 } = await sb.from('entries').select('*').eq('user_id', session.user.id);
-    if(e1) console.error(e1);
+    // Fetch belt profile
+    const { data: prof } = await sb.from('profiles').select('belt_rank, stripes').eq('id', session.user.id).single();
+    if(prof){
+      const badge = document.getElementById('user-belt-badge');
+      badge.textContent = `${prof.belt_rank} (${prof.stripes || 0}★)`;
+    }
+
+    const { data: entries } = await sb.from('entries').select('*').eq('user_id', session.user.id);
     db.entries = {};
     (entries || []).forEach(e => { db.entries[e.entry_date] = e; });
 
-    const { data: trainings, error: e2 } = await sb.from('trainings').select('*').eq('user_id', session.user.id);
-    if(e2) console.error(e2);
+    const { data: trainings } = await sb.from('trainings').select('*').eq('user_id', session.user.id);
     db.trainings = {};
     (trainings || []).forEach(t => {
       if(!db.trainings[t.training_date]) db.trainings[t.training_date] = [];
@@ -215,12 +221,8 @@
 
   function openDateModal(dateKey){
     document.getElementById('modal-date-title').textContent = humanDate(dateKey);
-    
-    const journalLink = document.getElementById('modal-link-journal');
-    const trainingLink = document.getElementById('modal-link-training');
-    
-    journalLink.href = `daily-entry.html?date=${dateKey}`;
-    trainingLink.href = `training-log.html?date=${dateKey}`;
+    document.getElementById('modal-link-journal').href = `daily-entry.html?date=${dateKey}`;
+    document.getElementById('modal-link-training').href = `training-log.html?date=${dateKey}`;
 
     const hasJournal = !!db.entries[dateKey];
     const hasTraining = !!(db.trainings[dateKey] && db.trainings[dateKey].length > 0);
@@ -261,9 +263,7 @@
       cell.className = cls;
       cell.textContent = day;
       
-      // Open modal on click
       cell.addEventListener('click', ()=> openDateModal(key));
-      
       grid.appendChild(cell);
     }
   }
