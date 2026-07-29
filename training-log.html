@@ -105,7 +105,7 @@
             </div>
           </div>
 
-          <!-- Quick Custom Sub Creator (Hidden by default) -->
+          <!-- Quick Custom Sub Creator -->
           <div id="custom-sub-input-box" class="hidden p-2.5 bg-zinc-950 border border-zinc-800 rounded-lg space-y-2">
             <p class="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Add Favorite Submission to List</p>
             <div class="flex gap-2">
@@ -355,7 +355,6 @@
     const containerGiven = document.getElementById('container-subs-given');
     const containerTaken = document.getElementById('container-subs-taken');
 
-    // Check if button already exists
     if (containerGiven.querySelector(`[data-sub="${name}"]`)) return;
 
     const createBtn = (typeClass) => {
@@ -437,7 +436,7 @@
   document.getElementById('t-date').addEventListener('change', async (e) => {
     activeDate = e.target.value;
     document.getElementById('log-date-header').textContent = `Training Log (${activeDate})`;
-    await loadHistoryAndPre-fill();
+    await loadHistoryAndPrefill();
   });
 
   // Round Counter
@@ -501,7 +500,6 @@
         count = parseInt(match[2], 10);
       }
       
-      // If custom sub isn't in default list, add button dynamically
       addCustomSubButton(subName);
 
       const badge = Array.from(document.querySelectorAll(selector)).find(b => b.dataset.sub.toLowerCase() === subName.toLowerCase());
@@ -514,8 +512,7 @@
   }
 
   // Load History & Auto-Fill Fields if Existing Log Found
-  async function loadHistoryAndPre-fill(){
-    // Reset Form First
+  async function loadHistoryAndPrefill(){
     existingLogId = null;
     document.querySelectorAll('.sub-badge').forEach(badge => {
       badge.dataset.count = '0';
@@ -543,14 +540,12 @@
       const latest = logs[0];
       existingLogId = latest.id;
 
-      // Fill Form with existing data
       rapidRounds = latest.rounds || 5;
       roundCountEl.textContent = rapidRounds;
       document.getElementById('t-rounds').value = rapidRounds;
       document.getElementById('t-class').value = latest.class_attended || '';
       document.getElementById('t-focus').value = latest.focus || '';
 
-      // Parse Positions
       if (latest.focus) {
         latest.focus.split(',').forEach(p => {
           const badge = Array.from(document.querySelectorAll('.pos-badge')).find(b => b.dataset.pos.toLowerCase() === p.trim().toLowerCase());
@@ -558,11 +553,9 @@
         });
       }
 
-      // Parse Subs
       prefillSubmissions(latest.subs_given, '.sub-given');
       prefillSubmissions(latest.subs_taken, '.sub-taken');
 
-      // Parse Notes / Instructor / Partners
       if (latest.notes) {
         let noteLines = latest.notes.split('\n');
         let reflectionLines = [];
@@ -613,7 +606,6 @@
       container.innerHTML = `<p class="text-xs text-zinc-500 italic">No entries for ${activeDate} yet.</p>`;
     }
 
-    // Handle Flow Map Parameters
     if (paramFocus) {
       tabFull.click();
       document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
@@ -711,10 +703,10 @@
     }
 
     btnSave.disabled = false;
-    await loadHistoryAndPre-fill();
+    await loadHistoryAndPrefill();
   });
 
-  await loadHistoryAndPre-fill();
+  await loadHistoryAndPrefill();
 
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
