@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Tactical Diagnostics — I SEE YOU & YOU ARE PERFECT</title>
+<title>Training Log — I SEE YOU & YOU ARE PERFECT</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -12,7 +12,6 @@
 <meta name="theme-color" content="#000000">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
@@ -20,12 +19,35 @@
   * { font-family: 'Inter', sans-serif; }
   html, body { background:#000; }
   .card { background:#0a0a0b; border:1px solid #18181b; }
-  .range-btn { transition: all .15s ease; border: 1px solid #27272a; }
-  .range-btn.selected { background: #dc2626; border-color: #f87171; color: #ffffff; box-shadow: 0 0 12px rgba(220,38,38,0.4); }
+  .input-field, .textarea-field, .select-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: border-color .2s ease, box-shadow .2s ease; }
+  .input-field:focus, .textarea-field:focus, .select-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
+
+  .textarea-field { resize: none; overflow: hidden; }
+
+  .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
+  .btn-primary:hover { background:#ef4444; }
+
+  .pos-badge, .sub-badge { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; user-select: none; }
+  .pos-badge.selected { background: #dc2626; border-color: #f87171; color: #ffffff; box-shadow: 0 0 12px rgba(220,38,38,0.4); }
+  
+  .sub-given.selected { background: #166534; border-color: #4ade80; color: #ffffff; box-shadow: 0 0 10px rgba(34,197,94,0.4); }
+  .sub-taken.selected { background: #991b1b; border-color: #f87171; color: #ffffff; box-shadow: 0 0 10px rgba(220,38,38,0.4); }
+
+  .energy-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; }
+  .energy-btn.selected { background: #18181b; border-color: #dc2626; color: #f87171; box-shadow: inset 0 0 0 1px #dc2626; }
+
+  .mood-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; opacity: 0.6; }
+  .mood-btn.selected { opacity: 1; border-color: #dc2626; background: rgba(220,38,38,0.12); box-shadow: 0 0 12px rgba(220,38,38,0.3); transform: scale(1.05); }
+
+  .mode-tab { transition: all .15s ease; border-bottom: 2px solid transparent; }
+  .mode-tab.active { border-color: #dc2626; color: #ffffff; }
 
   #loading-overlay { background:#000; }
   .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  
+  .mic-active { animation: pulse 1s infinite alternate; background: #dc2626 !important; }
+  @keyframes pulse { from { box-shadow: 0 0 5px #dc2626; } to { box-shadow: 0 0 20px #ef4444; } }
 </style>
 </head>
 <body class="bg-black text-zinc-100">
@@ -42,105 +64,187 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
       </a>
       <div class="flex-1">
-        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Tactical Review</p>
-        <h2 class="font-black italic uppercase text-base leading-tight">Positional Focus Radar</h2>
+        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Mat Review</p>
+        <h2 id="log-date-header" class="font-black italic uppercase text-base leading-tight">Training Log</h2>
       </div>
-      <img src="logo-bird-only-v2.png" alt="I See You" class="h-8 w-auto shrink-0">
+      <a href="bjj-flow.html" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-2.5 py-1.5 rounded-lg transition">Flow Map 🗺️</a>
     </div>
 
-    <div class="flex-1 px-5 py-5 space-y-5 pb-12">
-      
-      <!-- Time Range Toggle Bar -->
-      <div class="grid grid-cols-3 gap-2 bg-zinc-950 p-1.5 rounded-xl border border-zinc-900">
-        <button class="range-btn rounded-lg py-2 text-[10px] font-black uppercase tracking-wider text-zinc-400" data-range="7">7 Days</button>
-        <button class="range-btn selected rounded-lg py-2 text-[10px] font-black uppercase tracking-wider text-white" data-range="30">30 Days</button>
-        <button class="range-btn rounded-lg py-2 text-[10px] font-black uppercase tracking-wider text-zinc-400" data-range="90">90 Days</button>
+    <!-- Mode Tabs -->
+    <div class="flex border-b border-zinc-900 bg-zinc-950 px-5 text-xs font-bold uppercase tracking-wider text-zinc-500">
+      <button id="tab-rapid" class="mode-tab active flex-1 py-3 text-center">⚡ 10s Rapid Log</button>
+      <button id="tab-full" class="mode-tab flex-1 py-3 text-center">📝 Full Journal Entry</button>
+    </div>
+
+    <div class="flex-1 px-5 py-5 space-y-5 pb-32">
+
+      <!-- ================= RAPID MODE ================= -->
+      <div id="mode-rapid-container" class="space-y-4">
+        
+        <!-- Round Counter -->
+        <div class="card rounded-xl p-4 text-center">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Rounds Rolled</p>
+          <div class="flex items-center justify-center gap-6">
+            <button id="btn-minus-rounds" class="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 text-2xl font-black text-zinc-300 hover:border-red-600 transition">-</button>
+            <span id="rapid-round-count" class="text-5xl font-black italic text-white w-16 text-center">5</span>
+            <button id="btn-plus-rounds" class="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 text-2xl font-black text-red-500 hover:border-red-600 transition">+</button>
+          </div>
+        </div>
+
+        <!-- Submissions Landed vs Caught -->
+        <div class="card rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Submission Counters (Tap to increment)</p>
+            <button id="btn-reset-subs" class="text-[9px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded transition">
+              ↺ Reset Subs
+            </button>
+          </div>
+
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">🟢 Submissions Landed (Hits)</p>
+            <div class="flex flex-wrap gap-1.5">
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar" data-count="0">Armbar</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle" data-count="0">Triangle</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC" data-count="0">RNC</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura" data-count="0">Kimura</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine" data-count="0">Guillotine</button>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-zinc-900">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-red-500 mb-2">🔴 Caught In (Defects / Areas to Fix)</p>
+            <div class="flex flex-wrap gap-1.5">
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar" data-count="0">Armbar</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle" data-count="0">Triangle</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC" data-count="0">RNC</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura" data-count="0">Kimura</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine" data-count="0">Guillotine</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session Mood -->
+        <div class="card rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Session Feel / Mood</p>
+          <div class="grid grid-cols-4 gap-2">
+            <button class="mood-btn rapid-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😤 Tough">
+              <span class="text-2xl mb-1">😤</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Tough</span>
+            </button>
+            <button class="mood-btn rapid-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😐 Neutral">
+              <span class="text-2xl mb-1">😐</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Neutral</span>
+            </button>
+            <button class="mood-btn rapid-mood selected rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😊 Good">
+              <span class="text-2xl mb-1">😊</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Good</span>
+            </button>
+            <button class="mood-btn rapid-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="🔥 Peak">
+              <span class="text-2xl mb-1">🔥</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Peak</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Primary Positions Worked -->
+        <div class="card rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Primary Positions Worked</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Open Guard">Open Guard</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Closed Guard">Closed Guard</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Side Control">Side Control</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Mount">Mount</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center col-span-2" data-pos="Back Control">Back Control</button>
+          </div>
+        </div>
+
+        <!-- Voice-to-Text Quick Cue -->
+        <div class="card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Quick Note / Voice Cue</label>
+            <button id="btn-voice-rapid" class="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg hover:border-red-600 transition">
+              <span>🎙️ Voice Dictate</span>
+            </button>
+          </div>
+          <input id="rapid-note" type="text" placeholder="Tap mic to dictate or type key takeaway..." class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
+
       </div>
 
-      <!-- Neglected Areas Warning Card -->
-      <div class="card rounded-xl p-4 border-amber-900/50 bg-amber-950/20">
-        <h3 class="font-black italic uppercase text-xs tracking-[0.15em] text-amber-500 mb-2 flex items-center gap-1.5">
-          <span>🚨</span> Neglected Positions Diagnostic
-        </h3>
-        <div id="neglected-container" class="space-y-1 text-xs text-zinc-300"></div>
-      </div>
 
-      <!-- Submission Defense Diagnostic Card -->
-      <div class="card rounded-xl p-4 border-red-900/50 bg-red-950/20">
-        <h3 class="font-black italic uppercase text-xs tracking-[0.15em] text-red-400 mb-2 flex items-center gap-1.5">
-          <span>⚔️</span> Submission Vulnerability Radar
-        </h3>
-        <div id="subs-diagnostic-container" class="space-y-1 text-xs text-zinc-300"></div>
-      </div>
+      <!-- ================= FULL MODE ================= -->
+      <div id="mode-full-container" class="card rounded-xl p-4 space-y-4 hidden">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Class / Session Type</label>
+          <input id="t-class" type="text" placeholder="e.g. Gi Fundamentals / Competition Sparring" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
 
-      <!-- Positional Focus Radar Table -->
-      <div class="card rounded-xl p-4">
-        <h3 class="font-black italic uppercase text-xs tracking-[0.2em] text-zinc-200 mb-3 flex items-center gap-2">
-          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> 
-          <span id="radar-title-window">30-Day</span> Game Radar
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead>
-              <tr class="border-b border-zinc-800 text-[9px] font-black uppercase tracking-widest text-zinc-500">
-                <th class="pb-2">Metric</th>
-                <th class="pb-2 text-center">Target</th>
-                <th class="pb-2 text-right">Actuals</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-900 font-medium text-zinc-300">
-              <tr>
-                <td class="py-2.5 font-bold text-white">Mat Frequency</td>
-                <td id="target-freq" class="py-2.5 text-center text-zinc-500">12–16 sessions</td>
-                <td id="actual-freq" class="py-2.5 text-right font-black italic text-red-500">0 sessions</td>
-              </tr>
-              <tr>
-                <td class="py-2.5 font-bold text-white">Top vs. Bottom Ratio</td>
-                <td class="py-2.5 text-center text-zinc-500">50% / 50%</td>
-                <td id="actual-ratio" class="py-2.5 text-right font-bold text-zinc-200">0% / 0%</td>
-              </tr>
-              <tr>
-                <td class="py-2.5 font-bold text-white">Subs Given / Taken</td>
-                <td class="py-2.5 text-center text-zinc-500">Positive Differential</td>
-                <td id="actual-subs-ratio" class="py-2.5 text-right font-bold text-zinc-200">0 / 0</td>
-              </tr>
-              <tr>
-                <td class="py-2.5 font-bold text-white">Most Trained Node</td>
-                <td class="py-2.5 text-center text-zinc-500">System Balance</td>
-                <td id="actual-most" class="py-2.5 text-right text-emerald-400 font-bold">—</td>
-              </tr>
-              <tr>
-                <td class="py-2.5 font-bold text-white">Least Trained Node</td>
-                <td class="py-2.5 text-center text-zinc-500">System Balance</td>
-                <td id="actual-least" class="py-2.5 text-right text-amber-400 font-bold">—</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Training Date</label>
+            <input id="t-date" type="date" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Rounds Rolled</label>
+            <input id="t-rounds" type="number" min="0" value="5" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Instructor / Academy</label>
+          <input id="t-instructor" type="text" placeholder="e.g. Prof. Smith / Main Academy" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Training Partners / Sparring Notes</label>
+          <input id="t-partners" type="text" placeholder="e.g. Rolled with Dave (Purple) and Sarah (Blue)" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Technique Focus / Position</label>
+          <input id="t-focus" type="text" placeholder="e.g. Side Control Bottom — Shrimp Guard Recovery" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs font-semibold text-white">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-red-500">Execution Reflection</label>
+            <button id="btn-voice-full" class="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg hover:border-red-600 transition">
+              <span>🎙️ Dictate Reflection</span>
+            </button>
+          </div>
+          <textarea id="t-notes" rows="4" placeholder="Speak or type what happened..." class="textarea-field w-full rounded-lg p-3 text-xs leading-relaxed"></textarea>
+        </div>
+
+        <!-- Media Attachment -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Attach Mat Photo / Video Clip</label>
+          <div class="relative border border-dashed border-zinc-800 hover:border-red-600 rounded-xl p-4 text-center bg-black/40 transition cursor-pointer">
+            <input id="file-input" type="file" accept="image/*,video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            <div id="upload-placeholder" class="space-y-1">
+              <p class="text-xs font-bold text-zinc-300">📷 / 🎥 Tap to upload clip or whiteboard photo</p>
+              <p class="text-[9px] text-zinc-500 uppercase font-semibold">Supports Images &amp; MP4 Videos (Max 50MB)</p>
+            </div>
+            <div id="preview-container" class="hidden mt-2">
+              <p id="preview-filename" class="text-xs font-bold text-red-400 truncate"></p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Top vs Bottom Visual Bar -->
-      <div class="card rounded-xl p-4">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="font-black italic uppercase text-xs tracking-[0.2em] text-zinc-200">Role Balance Distribution</h3>
-          <span id="role-ratio-text" class="text-[10px] font-bold text-red-500 uppercase">0% Top / 0% Bottom</span>
-        </div>
-        <div class="w-full h-3 bg-zinc-900 rounded-full overflow-hidden flex">
-          <div id="bar-top" class="h-full bg-red-600 transition-all duration-500" style="width: 50%;"></div>
-          <div id="bar-bottom" class="h-full bg-zinc-700 transition-all duration-500" style="width: 50%;"></div>
+      <!-- History -->
+      <div>
+        <h3 class="font-black italic uppercase text-xs tracking-[0.2em] text-zinc-400 mb-3">Logged Sessions for This Date</h3>
+        <div id="session-history" class="space-y-3">
+          <p class="text-xs text-zinc-500 italic">No entries for this date yet.</p>
         </div>
       </div>
+    </div>
 
-      <!-- Positional Distribution Chart -->
-      <div class="card rounded-xl p-4">
-        <h3 class="font-black italic uppercase text-xs tracking-[0.2em] text-zinc-200 mb-4 flex items-center gap-2">
-          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Positional Breakdown
-        </h3>
-        <div class="relative w-full h-64">
-          <canvas id="positionChart"></canvas>
-        </div>
-      </div>
-
+    <!-- Save Button -->
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-5 py-4 bg-gradient-to-t from-black via-black to-transparent z-20">
+      <button id="btn-save-log" class="btn-primary w-full text-white font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
+        ⚡ Save Rapid Session
+      </button>
     </div>
   </div>
 </div>
@@ -151,151 +255,318 @@
   const session = await requireSession();
   if(!session) return;
 
-  const uid = session.user.id;
-  let allTrainings = [];
-  let currentRange = 30; 
-  let chartInstance = null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramDate = urlParams.get('date');
+  const paramFocus = urlParams.get('focus');
+  const paramConcept = urlParams.get('concept');
+  const paramPrimary = urlParams.get('primary');
 
-  const { data: trainings } = await sb
-    .from('trainings')
-    .select('*')
-    .eq('user_id', uid)
-    .order('training_date', { ascending: false });
+  const today = new Date().toISOString().split('T')[0];
+  const activeDate = paramDate || today;
 
-  allTrainings = trainings || [];
+  document.getElementById('t-date').value = activeDate;
+  document.getElementById('log-date-header').textContent = `Training Log (${activeDate})`;
 
-  function filterByRange(days){
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    return allTrainings.filter(t => new Date(t.training_date) >= cutoff);
-  }
+  let activeMode = 'rapid'; 
+  let rapidRounds = 5;
+  let rapidMood = '😊 Good';
 
-  function renderAnalytics(){
-    const logs = filterByRange(currentRange);
-    document.getElementById('radar-title-window').textContent = `${currentRange}-Day`;
+  // Speech Recognition Setup
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function setupDictation(btnId, targetInputId) {
+    const btn = document.getElementById(btnId);
+    const target = document.getElementById(targetInputId);
 
-    let positions = { 'Open Guard': 0, 'Closed Guard': 0, 'Side Control': 0, 'Mount': 0, 'Back Control': 0 };
-    let topCount = 0, bottomCount = 0;
-    
-    let totalGiven = 0, totalTaken = 0;
-    let givenMap = {}, takenMap = {};
-
-    logs.forEach(l => {
-      const focus = (l.focus || '').toLowerCase();
-
-      if (focus.includes('top') || focus.includes('pass') || focus.includes('pin')) topCount++;
-      if (focus.includes('bottom') || focus.includes('guard') || focus.includes('escape') || focus.includes('sweep')) bottomCount++;
-
-      if (focus.includes('open guard')) positions['Open Guard']++;
-      else if (focus.includes('closed guard')) positions['Closed Guard']++;
-      else if (focus.includes('side control')) positions['Side Control']++;
-      else if (focus.includes('mount')) positions['Mount']++;
-      else if (focus.includes('back control') || focus.includes('rear')) positions['Back Control']++;
-
-      if (l.subs_given) {
-        l.subs_given.split(',').forEach(s => {
-          const item = s.trim();
-          if(item) { givenMap[item] = (givenMap[item] || 0) + 1; totalGiven++; }
-        });
-      }
-      if (l.subs_taken) {
-        l.subs_taken.split(',').forEach(s => {
-          const item = s.trim();
-          if(item) { takenMap[item] = (takenMap[item] || 0) + 1; totalTaken++; }
-        });
-      }
-    });
-
-    // 1. Mat Frequency
-    const targetFreqStr = currentRange === 7 ? '3–4 sessions' : (currentRange === 30 ? '12–16 sessions' : '36–48 sessions');
-    document.getElementById('target-freq').textContent = targetFreqStr;
-    document.getElementById('actual-freq').textContent = `${logs.length} sessions`;
-
-    // 2. Role Ratio
-    const totalRoles = topCount + bottomCount || 1;
-    const topPct = Math.round((topCount / totalRoles) * 100);
-    const botPct = 100 - topPct;
-    document.getElementById('actual-ratio').textContent = `${topPct}% / ${botPct}%`;
-    document.getElementById('bar-top').style.width = `${topPct}%`;
-    document.getElementById('bar-bottom').style.width = `${botPct}%`;
-    document.getElementById('role-ratio-text').textContent = `${topPct}% Top / ${botPct}% Bottom`;
-
-    // 3. Subs Given / Taken
-    document.getElementById('actual-subs-ratio').textContent = `🟢 ${totalGiven} / 🔴 ${totalTaken}`;
-
-    // Submissions Vulnerability Diagnostic
-    const subDiagContainer = document.getElementById('subs-diagnostic-container');
-    const takenEntries = Object.entries(takenMap).sort((a,b) => b[1] - a[1]);
-
-    if (takenEntries.length > 0) {
-      subDiagContainer.innerHTML = `
-        <p class="font-medium text-red-200">Submissions you got caught in most during this period:</p>
-        <div class="flex flex-wrap gap-1.5 pt-1">
-          ${takenEntries.map(([sub, count]) => `<span class="bg-red-950 text-red-300 border border-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full">${sub} (${count}x)</span>`).join('')}
-        </div>
-      `;
-    } else {
-      subDiagContainer.innerHTML = `<p class="text-zinc-400 font-medium">No submission taps recorded in the last ${currentRange} days!</p>`;
+    if (!SpeechRecognition) {
+      btn.style.display = 'none';
+      return;
     }
 
-    // Neglected Positions
-    const posEntries = Object.entries(positions).sort((a,b) => b[1] - a[1]);
-    document.getElementById('actual-most').textContent = posEntries[0][1] > 0 ? `${posEntries[0][0]} (${posEntries[0][1]}x)` : 'None';
-    document.getElementById('actual-least').textContent = `${posEntries[posEntries.length - 1][0]} (${posEntries[posEntries.length - 1][1]}x)`;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-    const neglected = Object.keys(positions).filter(p => positions[p] === 0);
-    const neglectedContainer = document.getElementById('neglected-container');
+    let isListening = false;
 
-    if (neglected.length > 0) {
-      neglectedContainer.innerHTML = `
-        <p class="font-medium text-amber-200">Positions with 0 recorded sessions in the last ${currentRange} days:</p>
-        <div class="flex flex-wrap gap-1.5 pt-1">
-          ${neglected.map(p => `<span class="bg-amber-950 text-amber-400 border border-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">${p}</span>`).join('')}
-        </div>
-      `;
-    } else {
-      neglectedContainer.innerHTML = `<p class="text-zinc-400 font-medium">All 5 primary positions have been addressed in the last ${currentRange} days!</p>`;
-    }
-
-    // Chart.js
-    if (chartInstance) chartInstance.destroy();
-    const ctx = document.getElementById('positionChart').getContext('2d');
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: Object.keys(positions),
-        datasets: [{
-          label: 'Sessions',
-          data: Object.values(positions),
-          backgroundColor: '#dc2626',
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 10, weight: '700' } } },
-          y: { grid: { color: '#18181b' }, ticks: { color: '#52525b', precision: 0, font: { family: 'Inter', size: 10 } } }
-        }
-      }
-    });
-  }
-
-  document.querySelectorAll('.range-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      currentRange = parseInt(btn.dataset.range, 10);
-      document.querySelectorAll('.range-btn').forEach(b => {
-        b.classList.toggle('selected', b === btn);
-        b.classList.toggle('text-white', b === btn);
-        b.classList.toggle('text-zinc-400', b !== btn);
-      });
-      renderAnalytics();
+      if (!isListening) {
+        recognition.start();
+        isListening = true;
+        btn.classList.add('mic-active');
+        btn.querySelector('span').textContent = '🔴 Listening...';
+      } else {
+        recognition.stop();
+        isListening = false;
+        btn.classList.remove('mic-active');
+        btn.querySelector('span').textContent = '🎙️ Voice Dictate';
+      }
+    });
+
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      target.value = target.value ? `${target.value} ${transcript}` : transcript;
+      if(target.tagName === 'TEXTAREA') {
+        target.style.height = 'auto';
+        target.style.height = target.scrollHeight + 'px';
+      }
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      btn.classList.remove('mic-active');
+      btn.querySelector('span').textContent = '🎙️ Voice Dictate';
+    };
+  }
+
+  setupDictation('btn-voice-rapid', 'rapid-note');
+  setupDictation('btn-voice-full', 't-notes');
+
+  // Textarea Auto-Resizing
+  const notesTextarea = document.getElementById('t-notes');
+  function autoResizeTextarea() {
+    notesTextarea.style.height = 'auto';
+    notesTextarea.style.height = notesTextarea.scrollHeight + 'px';
+  }
+  notesTextarea.addEventListener('input', autoResizeTextarea);
+
+  // Tabs
+  const tabRapid = document.getElementById('tab-rapid');
+  const tabFull = document.getElementById('tab-full');
+  const rapidContainer = document.getElementById('mode-rapid-container');
+  const fullContainer = document.getElementById('mode-full-container');
+  const btnSave = document.getElementById('btn-save-log');
+
+  tabRapid.addEventListener('click', () => {
+    activeMode = 'rapid';
+    tabRapid.classList.add('active');
+    tabFull.classList.remove('active');
+    rapidContainer.classList.remove('hidden');
+    fullContainer.classList.add('hidden');
+    btnSave.textContent = '⚡ Save Rapid Session';
+  });
+
+  tabFull.addEventListener('click', () => {
+    activeMode = 'full';
+    tabFull.classList.add('active');
+    tabRapid.classList.remove('active');
+    fullContainer.classList.remove('hidden');
+    rapidContainer.classList.add('hidden');
+    btnSave.textContent = 'Save Full Training Log';
+    setTimeout(autoResizeTextarea, 50); 
+  });
+
+  if (paramFocus) {
+    tabFull.click();
+    document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
+  }
+  if (paramConcept) {
+    notesTextarea.value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
+    autoResizeTextarea();
+  }
+
+  // Round Counter
+  const roundCountEl = document.getElementById('rapid-round-count');
+  document.getElementById('btn-minus-rounds').addEventListener('click', () => {
+    if (rapidRounds > 0) rapidRounds--;
+    roundCountEl.textContent = rapidRounds;
+    document.getElementById('t-rounds').value = rapidRounds;
+  });
+  document.getElementById('btn-plus-rounds').addEventListener('click', () => {
+    rapidRounds++;
+    roundCountEl.textContent = rapidRounds;
+    document.getElementById('t-rounds').value = rapidRounds;
+  });
+
+  // Positional Badges
+  document.querySelectorAll('.pos-badge').forEach(badge => {
+    badge.addEventListener('click', () => badge.classList.toggle('selected'));
+  });
+
+  // Multi-Tap Submission Counters
+  document.querySelectorAll('.sub-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      let count = parseInt(badge.dataset.count || '0', 10);
+      count++;
+      badge.dataset.count = count;
+      badge.classList.add('selected');
+      
+      const subName = badge.dataset.sub;
+      badge.textContent = `${subName} (${count}x)`;
     });
   });
 
-  renderAnalytics();
+  // Reset Submissions Button
+  document.getElementById('btn-reset-subs').addEventListener('click', () => {
+    document.querySelectorAll('.sub-badge').forEach(badge => {
+      badge.dataset.count = '0';
+      badge.classList.remove('selected');
+      badge.textContent = badge.dataset.sub;
+    });
+  });
+
+  document.querySelectorAll('.rapid-mood').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rapid-mood').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      rapidMood = btn.dataset.mood;
+    });
+  });
+
+  let selectedFile = null;
+  const fileInput = document.getElementById('file-input');
+  const previewContainer = document.getElementById('preview-container');
+  const previewFilename = document.getElementById('preview-filename');
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      selectedFile = e.target.files[0];
+      previewFilename.textContent = `Attached: ${selectedFile.name}`;
+      previewContainer.classList.remove('hidden');
+    }
+  });
+
+  async function loadHistory(){
+    const { data: logs } = await sb
+      .from('trainings')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('training_date', activeDate)
+      .order('created_at', { ascending: false });
+
+    const container = document.getElementById('session-history');
+    if (logs && logs.length > 0) {
+      container.innerHTML = logs.map(l => {
+        let mediaHtml = '';
+        if (l.media_url) {
+          const isVideo = l.media_url.match(/\.(mp4|mov|webm)$/i);
+          if (isVideo) {
+            mediaHtml = `<video src="${l.media_url}" controls class="w-full h-40 object-cover rounded-lg mt-2 border border-zinc-800"></video>`;
+          } else {
+            mediaHtml = `<img src="${l.media_url}" alt="Mat Media" class="w-full h-40 object-cover rounded-lg mt-2 border border-zinc-800">`;
+          }
+        }
+
+        return `
+          <div class="card rounded-xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase italic text-white">${l.class_attended || 'Session'}</span>
+              <span class="text-[10px] font-bold uppercase bg-red-950 text-red-400 border border-red-800 px-2 py-0.5 rounded-full">${l.rounds || 0} Rounds</span>
+            </div>
+            ${l.focus ? `<p class="text-xs font-bold text-red-500 uppercase">${l.focus}</p>` : ''}
+            ${l.subs_given ? `<p class="text-[10px] text-emerald-400 font-bold">🟢 Subs Landed: ${l.subs_given}</p>` : ''}
+            ${l.subs_taken ? `<p class="text-[10px] text-red-400 font-bold">🔴 Caught In: ${l.subs_taken}</p>` : ''}
+            ${l.notes ? `<p class="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap bg-black/50 p-2.5 rounded-lg border border-zinc-900">${l.notes}</p>` : ''}
+            ${mediaHtml}
+          </div>
+        `;
+      }).join('');
+    } else {
+      container.innerHTML = `<p class="text-xs text-zinc-500 italic">No entries for ${activeDate} yet.</p>`;
+    }
+  }
+
+  // Helper to compile multi-tap submission strings (e.g. "Armbar (4x), Triangle (2x)")
+  function getSubmissionsString(selector) {
+    const selectedBadges = Array.from(document.querySelectorAll(selector + '.selected'));
+    return selectedBadges.map(b => {
+      const sub = b.dataset.sub;
+      const count = parseInt(b.dataset.count || '1', 10);
+      return count > 1 ? `${sub} (${count}x)` : sub;
+    }).join(', ');
+  }
+
+  // Save Event
+  btnSave.addEventListener('click', async () => {
+    btnSave.disabled = true;
+    btnSave.textContent = 'Saving...';
+
+    const subsGiven = getSubmissionsString('.sub-given');
+    const subsTaken = getSubmissionsString('.sub-taken');
+
+    let payload = {};
+
+    if (activeMode === 'rapid') {
+      const selectedBadges = Array.from(document.querySelectorAll('.pos-badge.selected')).map(b => b.dataset.pos);
+      const focusText = selectedBadges.length > 0 ? selectedBadges.join(', ') : 'General Rolling';
+      const rapidNoteText = document.getElementById('rapid-note').value;
+
+      payload = {
+        user_id: session.user.id,
+        training_date: activeDate,
+        class_attended: `Rapid Log (${rapidMood})`,
+        rounds: rapidRounds,
+        focus: focusText,
+        subs_given: subsGiven,
+        subs_taken: subsTaken,
+        notes: rapidNoteText ? `[Feel: ${rapidMood}]\n${rapidNoteText}` : `[Feel: ${rapidMood}]`
+      };
+    } else {
+      let mediaUrl = null;
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+        const { data: uploadData, error: uploadErr } = await sb.storage.from('mat-media').upload(fileName, selectedFile);
+
+        if (!uploadErr) {
+          const { data: urlData } = sb.storage.from('mat-media').getPublicUrl(fileName);
+          mediaUrl = urlData.publicUrl;
+        }
+      }
+
+      const instVal = document.getElementById('t-instructor').value;
+      const partVal = document.getElementById('t-partners').value;
+      let fullNotes = notesTextarea.value;
+
+      let metaPrefix = '';
+      if (instVal) metaPrefix += `Instructor/Academy: ${instVal}\n`;
+      if (partVal) metaPrefix += `Partners: ${partVal}\n`;
+      if (metaPrefix) fullNotes = `${metaPrefix}\n${fullNotes}`;
+
+      payload = {
+        user_id: session.user.id,
+        training_date: document.getElementById('t-date').value,
+        class_attended: document.getElementById('t-class').value || 'Full Session',
+        rounds: parseInt(document.getElementById('t-rounds').value, 10) || 0,
+        focus: document.getElementById('t-focus').value,
+        subs_given: subsGiven,
+        subs_taken: subsTaken,
+        notes: fullNotes,
+        media_url: mediaUrl
+      };
+    }
+
+    const { error } = await sb.from('trainings').insert(payload);
+    if(error){
+      console.error('Supabase Error:', error);
+      alert(`Could not save log: ${error.message || 'Unknown error'}`);
+      btnSave.disabled = false;
+      btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
+      return;
+    }
+
+    // Reset Submission Badges & Inputs
+    document.querySelectorAll('.sub-badge').forEach(badge => {
+      badge.dataset.count = '0';
+      badge.classList.remove('selected');
+      badge.textContent = badge.dataset.sub;
+    });
+    document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
+    
+    document.getElementById('rapid-note').value = '';
+    document.getElementById('t-instructor').value = '';
+    document.getElementById('t-partners').value = '';
+    notesTextarea.value = '';
+    notesTextarea.style.height = 'auto'; 
+    selectedFile = null;
+    previewContainer.classList.add('hidden');
+
+    btnSave.disabled = false;
+    btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
+
+    await loadHistory();
+  });
+
+  await loadHistory();
 
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
