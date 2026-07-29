@@ -93,24 +93,32 @@
 
         <!-- Submissions Landed vs Caught -->
         <div class="card rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Submission Counters (Tap to increment)</p>
+            <button id="btn-reset-subs" class="text-[9px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded transition">
+              ↺ Reset Subs
+            </button>
+          </div>
+
           <div>
             <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">🟢 Submissions Landed (Hits)</p>
             <div class="flex flex-wrap gap-1.5">
-              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar">Armbar</button>
-              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle">Triangle</button>
-              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC">RNC</button>
-              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura">Kimura</button>
-              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine">Guillotine</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar" data-count="0">Armbar</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle" data-count="0">Triangle</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC" data-count="0">RNC</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura" data-count="0">Kimura</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine" data-count="0">Guillotine</button>
             </div>
           </div>
+
           <div class="pt-2 border-t border-zinc-900">
             <p class="text-[10px] font-bold uppercase tracking-wider text-red-500 mb-2">🔴 Caught In (Defects / Areas to Fix)</p>
             <div class="flex flex-wrap gap-1.5">
-              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar">Armbar</button>
-              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle">Triangle</button>
-              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC">RNC</button>
-              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura">Kimura</button>
-              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine">Guillotine</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar" data-count="0">Armbar</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle" data-count="0">Triangle</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC" data-count="0">RNC</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura" data-count="0">Kimura</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine" data-count="0">Guillotine</button>
             </div>
           </div>
         </div>
@@ -270,7 +278,7 @@
     const target = document.getElementById(targetInputId);
 
     if (!SpeechRecognition) {
-      btn.style.display = 'none'; // Browser unsupported
+      btn.style.display = 'none';
       return;
     }
 
@@ -369,9 +377,31 @@
     document.getElementById('t-rounds').value = rapidRounds;
   });
 
-  // Badges
-  document.querySelectorAll('.pos-badge, .sub-badge').forEach(badge => {
+  // Positional Badges
+  document.querySelectorAll('.pos-badge').forEach(badge => {
     badge.addEventListener('click', () => badge.classList.toggle('selected'));
+  });
+
+  // Multi-Tap Submission Counters
+  document.querySelectorAll('.sub-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      let count = parseInt(badge.dataset.count || '0', 10);
+      count++;
+      badge.dataset.count = count;
+      badge.classList.add('selected');
+      
+      const subName = badge.dataset.sub;
+      badge.textContent = `${subName} (${count}x)`;
+    });
+  });
+
+  // Reset Submissions Button
+  document.getElementById('btn-reset-subs').addEventListener('click', () => {
+    document.querySelectorAll('.sub-badge').forEach(badge => {
+      badge.dataset.count = '0';
+      badge.classList.remove('selected');
+      badge.textContent = badge.dataset.sub;
+    });
   });
 
   document.querySelectorAll('.rapid-mood').forEach(btn => {
@@ -435,13 +465,23 @@
     }
   }
 
+  // Helper to compile multi-tap submission strings (e.g. "Armbar (4x), Triangle (2x)")
+  function getSubmissionsString(selector) {
+    const selectedBadges = Array.from(document.querySelectorAll(selector + '.selected'));
+    return selectedBadges.map(b => {
+      const sub = b.dataset.sub;
+      const count = parseInt(b.dataset.count || '1', 10);
+      return count > 1 ? `${sub} (${count}x)` : sub;
+    }).join(', ');
+  }
+
   // Save Event
   btnSave.addEventListener('click', async () => {
     btnSave.disabled = true;
     btnSave.textContent = 'Saving...';
 
-    const subsGiven = Array.from(document.querySelectorAll('.sub-given.selected')).map(b => b.dataset.sub).join(', ');
-    const subsTaken = Array.from(document.querySelectorAll('.sub-taken.selected')).map(b => b.dataset.sub).join(', ');
+    const subsGiven = getSubmissionsString('.sub-given');
+    const subsTaken = getSubmissionsString('.sub-taken');
 
     let payload = {};
 
@@ -504,8 +544,14 @@
       return;
     }
 
-    // Reset
-    document.querySelectorAll('.pos-badge, .sub-badge').forEach(b => b.classList.remove('selected'));
+    // Reset Submission Badges & Inputs
+    document.querySelectorAll('.sub-badge').forEach(badge => {
+      badge.dataset.count = '0';
+      badge.classList.remove('selected');
+      badge.textContent = badge.dataset.sub;
+    });
+    document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
+    
     document.getElementById('rapid-note').value = '';
     document.getElementById('t-instructor').value = '';
     document.getElementById('t-partners').value = '';
