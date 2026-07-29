@@ -133,6 +133,16 @@
         </div>
 
         <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Instructor / Academy</label>
+          <input id="t-instructor" type="text" placeholder="e.g. Prof. Smith / Main Academy" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Training Partners / Sparring Notes</label>
+          <input id="t-partners" type="text" placeholder="e.g. Rolled with Dave (Purple) and Sarah (Blue)" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
+
+        <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Technique Focus / Position</label>
           <input id="t-focus" type="text" placeholder="e.g. Side Control Bottom — Shrimp Guard Recovery" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs font-semibold text-white">
         </div>
@@ -346,13 +356,22 @@
         }
       }
 
+      const instVal = document.getElementById('t-instructor').value;
+      const partVal = document.getElementById('t-partners').value;
+      let fullNotes = document.getElementById('t-notes').value;
+
+      let metaPrefix = '';
+      if (instVal) metaPrefix += `Instructor/Academy: ${instVal}\n`;
+      if (partVal) metaPrefix += `Partners: ${partVal}\n`;
+      if (metaPrefix) fullNotes = `${metaPrefix}\n${fullNotes}`;
+
       payload = {
         user_id: session.user.id,
         training_date: document.getElementById('t-date').value,
         class_attended: document.getElementById('t-class').value || 'Full Session',
         rounds: parseInt(document.getElementById('t-rounds').value, 10) || 0,
         focus: document.getElementById('t-focus').value,
-        notes: document.getElementById('t-notes').value,
+        notes: fullNotes,
         media_url: mediaUrl
       };
     }
@@ -369,6 +388,8 @@
     // Reset inputs
     document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
     document.getElementById('rapid-note').value = '';
+    document.getElementById('t-instructor').value = '';
+    document.getElementById('t-partners').value = '';
     document.getElementById('t-notes').value = '';
     selectedFile = null;
     previewContainer.classList.add('hidden');
