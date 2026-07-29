@@ -262,7 +262,8 @@
   const paramPrimary = urlParams.get('primary');
 
   const today = new Date().toISOString().split('T')[0];
-  const activeDate = paramDate || today;
+  let activeDate = paramDate || today;
+  let existingLogId = null;
 
   document.getElementById('t-date').value = activeDate;
   document.getElementById('log-date-header').textContent = `Training Log (${activeDate})`;
@@ -271,7 +272,7 @@
   let rapidRounds = 5;
   let rapidMood = '😊 Good';
 
-  // Dynamic Textarea Auto-Resizing Function
+  // Dynamic Textarea Auto-Resizing
   const notesTextarea = document.getElementById('t-notes');
   function autoResizeTextarea() {
     notesTextarea.style.height = 'auto';
@@ -341,7 +342,7 @@
     tabFull.classList.remove('active');
     rapidContainer.classList.remove('hidden');
     fullContainer.classList.add('hidden');
-    btnSave.textContent = '⚡ Save Rapid Session';
+    btnSave.textContent = existingLogId ? '⚡ Update Rapid Session' : '⚡ Save Rapid Session';
   });
 
   tabFull.addEventListener('click', () => {
@@ -350,20 +351,16 @@
     tabRapid.classList.remove('active');
     fullContainer.classList.remove('hidden');
     rapidContainer.classList.add('hidden');
-    btnSave.textContent = 'Save Full Training Log';
+    btnSave.textContent = existingLogId ? 'Update Full Training Log' : 'Save Full Training Log';
     setTimeout(autoResizeTextarea, 50); 
   });
 
-  // Flow Map Prefill Logic with Auto-Resize
-  if (paramFocus) {
-    tabFull.click();
-    document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
-  }
-  if (paramConcept) {
-    tabFull.click();
-    notesTextarea.value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
-    setTimeout(autoResizeTextarea, 100);
-  }
+  // Date Change Listener
+  document.getElementById('t-date').addEventListener('change', async (e) => {
+    activeDate = e.target.value;
+    document.getElementById('log-date-header').textContent = `Training Log (${activeDate})`;
+    await loadHistoryAndPre-fill();
+  });
 
   // Round Counter
   const roundCountEl = document.getElementById('rapid-round-count');
@@ -426,7 +423,45 @@
     }
   });
 
-  async function loadHistory(){
+  // Helper to parse submissions string back into badge counters
+  function prefillSubmissions(subsStr, selector) {
+    if(!subsStr) return;
+    const parts = subsStr.split(',').map(s => s.trim());
+    parts.forEach(p => {
+      const match = p.match(/^(.+?)\s*\((?:(\d+)x)\)$/);
+      let subName = p;
+      let count = 1;
+      if (match) {
+        subName = match[1];
+        count = parseInt(match[2], 10);
+      }
+      const badge = Array.from(document.querySelectorAll(selector)).find(b => b.dataset.sub.toLowerCase() === subName.toLowerCase());
+      if (badge) {
+        badge.dataset.count = count;
+        badge.classList.add('selected');
+        badge.textContent = `${badge.dataset.sub} (${count}x)`;
+      }
+    });
+  }
+
+  // Load History & Auto-Fill Fields if Existing Log Found
+  async function loadHistoryAndPre-fill(){
+    // Reset Form First
+    existingLogId = null;
+    document.querySelectorAll('.sub-badge').forEach(badge => {
+      badge.dataset.count = '0';
+      badge.classList.remove('selected');
+      badge.textContent = badge.dataset.sub;
+    });
+    document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
+    document.getElementById('rapid-note').value = '';
+    document.getElementById('t-class').value = '';
+    document.getElementById('t-instructor').value = '';
+    document.getElementById('t-partners').value = '';
+    document.getElementById('t-focus').value = '';
+    notesTextarea.value = '';
+    notesTextarea.style.height = 'auto';
+
     const { data: logs } = await sb
       .from('trainings')
       .select('*')
@@ -436,6 +471,49 @@
 
     const container = document.getElementById('session-history');
     if (logs && logs.length > 0) {
+      const latest = logs[0];
+      existingLogId = latest.id;
+
+      // Fill Form with existing data
+      rapidRounds = latest.rounds || 5;
+      roundCountEl.textContent = rapidRounds;
+      document.getElementById('t-rounds').value = rapidRounds;
+      document.getElementById('t-class').value = latest.class_attended || '';
+      document.getElementById('t-focus').value = latest.focus || '';
+
+      // Parse Positions
+      if (latest.focus) {
+        latest.focus.split(',').forEach(p => {
+          const badge = Array.from(document.querySelectorAll('.pos-badge')).find(b => b.dataset.pos.toLowerCase() === p.trim().toLowerCase());
+          if (badge) badge.classList.add('selected');
+        });
+      }
+
+      // Parse Subs
+      prefillSubmissions(latest.subs_given, '.sub-given');
+      prefillSubmissions(latest.subs_taken, '.sub-taken');
+
+      // Parse Notes / Instructor / Partners
+      if (latest.notes) {
+        let noteLines = latest.notes.split('\n');
+        let reflectionLines = [];
+        noteLines.forEach(line => {
+          if (line.startsWith('Instructor/Academy:')) {
+            document.getElementById('t-instructor').value = line.replace('Instructor/Academy:', '').trim();
+          } else if (line.startsWith('Partners:')) {
+            document.getElementById('t-partners').value = line.replace('Partners:', '').trim();
+          } else if (line.startsWith('[Feel:')) {
+            document.getElementById('rapid-note').value = line.split(']').slice(1).join(']').trim();
+          } else {
+            reflectionLines.push(line);
+          }
+        });
+        notesTextarea.value = reflectionLines.join('\n').trim();
+        setTimeout(autoResizeTextarea, 50);
+      }
+
+      btnSave.textContent = activeMode === 'rapid' ? '⚡ Update Rapid Session' : 'Update Full Training Log';
+
       container.innerHTML = logs.map(l => {
         let mediaHtml = '';
         if (l.media_url) {
@@ -462,7 +540,19 @@
         `;
       }).join('');
     } else {
+      btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
       container.innerHTML = `<p class="text-xs text-zinc-500 italic">No entries for ${activeDate} yet.</p>`;
+    }
+
+    // Handle Flow Map Parameters
+    if (paramFocus) {
+      tabFull.click();
+      document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
+    }
+    if (paramConcept) {
+      tabFull.click();
+      notesTextarea.value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
+      setTimeout(autoResizeTextarea, 100);
     }
   }
 
@@ -475,7 +565,7 @@
     }).join(', ');
   }
 
-  // Save Event
+  // Save / Update Event
   btnSave.addEventListener('click', async () => {
     btnSave.disabled = true;
     btnSave.textContent = 'Saving...';
@@ -530,43 +620,32 @@
         focus: document.getElementById('t-focus').value,
         subs_given: subsGiven,
         subs_taken: subsTaken,
-        notes: fullNotes,
-        media_url: mediaUrl
+        notes: fullNotes
       };
+
+      if (mediaUrl) payload.media_url = mediaUrl;
     }
 
-    const { error } = await sb.from('trainings').insert(payload);
-    if(error){
-      console.error('Supabase Error:', error);
-      alert(`Could not save log: ${error.message || 'Unknown error'}`);
+    let result;
+    if (existingLogId) {
+      result = await sb.from('trainings').update(payload).eq('id', existingLogId);
+    } else {
+      result = await sb.from('trainings').insert(payload);
+    }
+
+    if(result.error){
+      console.error('Supabase Error:', result.error);
+      alert(`Could not save log: ${result.error.message || 'Unknown error'}`);
       btnSave.disabled = false;
       btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
       return;
     }
 
-    // Reset Submission Badges & Inputs
-    document.querySelectorAll('.sub-badge').forEach(badge => {
-      badge.dataset.count = '0';
-      badge.classList.remove('selected');
-      badge.textContent = badge.dataset.sub;
-    });
-    document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
-    
-    document.getElementById('rapid-note').value = '';
-    document.getElementById('t-instructor').value = '';
-    document.getElementById('t-partners').value = '';
-    notesTextarea.value = '';
-    notesTextarea.style.height = 'auto'; 
-    selectedFile = null;
-    previewContainer.classList.add('hidden');
-
     btnSave.disabled = false;
-    btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
-
-    await loadHistory();
+    await loadHistoryAndPre-fill();
   });
 
-  await loadHistory();
+  await loadHistoryAndPre-fill();
 
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
