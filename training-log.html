@@ -271,6 +271,14 @@
   let rapidRounds = 5;
   let rapidMood = '😊 Good';
 
+  // Dynamic Textarea Auto-Resizing Function
+  const notesTextarea = document.getElementById('t-notes');
+  function autoResizeTextarea() {
+    notesTextarea.style.height = 'auto';
+    notesTextarea.style.height = (notesTextarea.scrollHeight) + 'px';
+  }
+  notesTextarea.addEventListener('input', autoResizeTextarea);
+
   // Speech Recognition Setup
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   function setupDictation(btnId, targetInputId) {
@@ -306,8 +314,7 @@
       const transcript = e.results[0][0].transcript;
       target.value = target.value ? `${target.value} ${transcript}` : transcript;
       if(target.tagName === 'TEXTAREA') {
-        target.style.height = 'auto';
-        target.style.height = target.scrollHeight + 'px';
+        autoResizeTextarea();
       }
     };
 
@@ -320,14 +327,6 @@
 
   setupDictation('btn-voice-rapid', 'rapid-note');
   setupDictation('btn-voice-full', 't-notes');
-
-  // Textarea Auto-Resizing
-  const notesTextarea = document.getElementById('t-notes');
-  function autoResizeTextarea() {
-    notesTextarea.style.height = 'auto';
-    notesTextarea.style.height = notesTextarea.scrollHeight + 'px';
-  }
-  notesTextarea.addEventListener('input', autoResizeTextarea);
 
   // Tabs
   const tabRapid = document.getElementById('tab-rapid');
@@ -355,13 +354,15 @@
     setTimeout(autoResizeTextarea, 50); 
   });
 
+  // Flow Map Prefill Logic with Auto-Resize
   if (paramFocus) {
     tabFull.click();
     document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
   }
   if (paramConcept) {
+    tabFull.click();
     notesTextarea.value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
-    autoResizeTextarea();
+    setTimeout(autoResizeTextarea, 100);
   }
 
   // Round Counter
@@ -465,7 +466,6 @@
     }
   }
 
-  // Helper to compile multi-tap submission strings (e.g. "Armbar (4x), Triangle (2x)")
   function getSubmissionsString(selector) {
     const selectedBadges = Array.from(document.querySelectorAll(selector + '.selected'));
     return selectedBadges.map(b => {
