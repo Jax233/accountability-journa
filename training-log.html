@@ -33,6 +33,8 @@
   .sub-given.selected { background: #166534; border-color: #4ade80; color: #ffffff; box-shadow: 0 0 10px rgba(34,197,94,0.4); }
   .sub-taken.selected { background: #991b1b; border-color: #f87171; color: #ffffff; box-shadow: 0 0 10px rgba(220,38,38,0.4); }
 
+  .custom-sub-badge { border-style: dashed !important; border-color: #3f3f46 !important; }
+
   .energy-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; }
   .energy-btn.selected { background: #18181b; border-color: #dc2626; color: #f87171; box-shadow: inset 0 0 0 1px #dc2626; }
 
@@ -112,6 +114,7 @@
               <input id="custom-sub-name" type="text" placeholder="e.g. Ankle Lock / Darce" class="input-field flex-1 rounded-md px-2.5 py-1.5 text-xs">
               <button id="btn-save-custom-sub" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-md transition">Add</button>
             </div>
+            <p class="text-[8px] text-zinc-500 italic">Tip: Long-press or right-click any custom sub to delete it.</p>
           </div>
 
           <div>
@@ -343,6 +346,19 @@
   setupDictation('btn-voice-rapid', 'rapid-note');
   setupDictation('btn-voice-full', 't-notes');
 
+  // Delete Custom Submission helper
+  function deleteCustomSubmission(name) {
+    if (confirm(`Remove "${name}" from your custom submission list?`)) {
+      // 1. Remove elements from UI
+      document.querySelectorAll(`[data-sub="${name}"]`).forEach(btn => btn.remove());
+
+      // 2. Remove from localStorage
+      let saved = JSON.parse(localStorage.getItem('custom_subs') || '[]');
+      saved = saved.filter(s => s.toLowerCase() !== name.toLowerCase());
+      localStorage.setItem('custom_subs', JSON.stringify(saved));
+    }
+  }
+
   // Custom Submission Persistence Logic
   function loadCustomSubmissions() {
     const saved = JSON.parse(localStorage.getItem('custom_subs') || '[]');
@@ -359,11 +375,11 @@
 
     const createBtn = (typeClass) => {
       const btn = document.createElement('button');
-      btn.className = `sub-badge ${typeClass} text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900`;
+      btn.className = `sub-badge ${typeClass} custom-sub-badge text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900`;
       btn.dataset.sub = name;
       btn.dataset.count = '0';
       btn.textContent = name;
-      attachSubClickListener(btn);
+      attachSubClickListener(btn, true); // Mark as custom
       return btn;
     };
 
@@ -391,8 +407,11 @@
     }
   });
 
-  // Attach Sub Multi-Tap Listener
-  function attachSubClickListener(badge) {
+  // Attach Sub Multi-Tap & Long-Press Deletion Listener
+  function attachSubClickListener(badge, isCustom = false) {
+    let pressTimer = null;
+
+    // Normal Click (Increment Counter)
     badge.addEventListener('click', () => {
       let count = parseInt(badge.dataset.count || '0', 10);
       count++;
@@ -401,9 +420,28 @@
       const subName = badge.dataset.sub;
       badge.textContent = `${subName} (${count}x)`;
     });
+
+    // Handle Long-Press / Right-Click Deletion for Custom Badges
+    if (isCustom) {
+      // Desktop Right Click
+      badge.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        deleteCustomSubmission(badge.dataset.sub);
+      });
+
+      // Mobile Touch Hold (500ms)
+      badge.addEventListener('touchstart', () => {
+        pressTimer = setTimeout(() => {
+          deleteCustomSubmission(badge.dataset.sub);
+        }, 600);
+      });
+
+      badge.addEventListener('touchend', () => clearTimeout(pressTimer));
+      badge.addEventListener('touchmove', () => clearTimeout(pressTimer));
+    }
   }
 
-  document.querySelectorAll('.sub-badge').forEach(attachSubClickListener);
+  document.querySelectorAll('.sub-badge').forEach(b => attachSubClickListener(b, false));
   loadCustomSubmissions();
 
   // Tabs
