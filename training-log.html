@@ -18,21 +18,23 @@
 <style>
   * { font-family: 'Inter', sans-serif; }
   html, body { background:#000; }
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: #000000; }
-  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: #dc2626; }
-
-  .input-field, .textarea-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
-  .input-field:focus, .textarea-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18), 0 0 18px rgba(220,38,38,0.25); }
-  .input-field::placeholder, .textarea-field::placeholder { color:#52525b; }
+  .card { background:#0a0a0b; border:1px solid #18181b; }
+  .input-field, .textarea-field, .select-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
+  .input-field:focus, .textarea-field:focus, .select-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
 
   .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
-  .btn-primary:hover { background:#ef4444; box-shadow: 0 0 32px rgba(220,38,38,0.55); }
-  .btn-primary:disabled { opacity:.6; }
-  .card { background:#0a0a0b; border:1px solid #18181b; }
-  .mood-btn { transition: all .15s ease; border:1.5px solid #27272a; }
-  .mood-btn.selected { border-color:#dc2626; background: rgba(220,38,38,0.12); box-shadow: 0 0 16px rgba(220,38,38,0.35); }
+  .btn-primary:hover { background:#ef4444; }
+  .btn-ghost { border:1.5px solid #dc2626; color:#f87171; background: rgba(220,38,38,0.04); transition: all .18s ease; }
+
+  /* Tap Badge Toggle Styling */
+  .pos-badge { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; user-select: none; }
+  .pos-badge.selected { background: #dc2626; border-color: #f87171; color: #ffffff; box-shadow: 0 0 12px rgba(220,38,38,0.4); }
+
+  .energy-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; }
+  .energy-btn.selected { background: #18181b; border-color: #dc2626; color: #f87171; box-shadow: inset 0 0 0 1px #dc2626; }
+
+  .mode-tab { transition: all .15s ease; border-bottom: 2px solid transparent; }
+  .mode-tab.active { border-color: #dc2626; color: #ffffff; }
 
   #loading-overlay { background:#000; }
   .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
@@ -47,83 +49,128 @@
   </div>
 
   <div id="app-content" class="hidden flex-1 flex flex-col">
+    <!-- Header -->
     <div class="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-zinc-900 px-5 py-4 flex items-center gap-3">
       <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-md hover:bg-zinc-900 text-zinc-300 hover:text-red-500 transition">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
       </a>
       <div class="flex-1">
-        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Mat Session Tracker</p>
-        <h2 id="training-date-title" class="font-black italic uppercase text-base leading-tight"></h2>
+        <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.25em]">Mat Review</p>
+        <h2 id="log-date-header" class="font-black italic uppercase text-base leading-tight">Training Log</h2>
       </div>
-      <img src="logo-bird-only-v2.png" alt="I See You & You Are Perfect" class="h-8 w-auto shrink-0">
+      <a href="bjj-flow.html" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-2.5 py-1.5 rounded-lg transition">Flow Map 🗺️</a>
     </div>
 
-    <div class="flex-1 px-5 py-5 space-y-5 pb-28">
-      <div class="card rounded-xl p-4">
-        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-4 flex items-center gap-2">
-          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Mat Details
-        </h3>
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Class Attended</label>
-        <input id="t-class" type="text" placeholder="e.g. Gi Fundamentals, No-Gi Open Mat" class="input-field w-full rounded-lg px-3.5 py-2.5 text-sm mb-4">
+    <!-- Mode Selector Tabs -->
+    <div class="flex border-b border-zinc-900 bg-zinc-950 px-5 text-xs font-bold uppercase tracking-wider text-zinc-500">
+      <button id="tab-rapid" class="mode-tab active flex-1 py-3 text-center">⚡ 10s Rapid Log</button>
+      <button id="tab-full" class="mode-tab flex-1 py-3 text-center">📝 Full Journal Entry</button>
+    </div>
 
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Coach</label>
-        <input id="t-coach" type="text" placeholder="Who ran the room?" class="input-field w-full rounded-lg px-3.5 py-2.5 text-sm mb-4">
+    <div class="flex-1 px-5 py-5 space-y-5 pb-32">
 
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Training Partners</label>
-        <input id="t-partners" type="text" placeholder="Who'd you roll with?" class="input-field w-full rounded-lg px-3.5 py-2.5 text-sm mb-4">
-
-        <div class="flex items-center justify-between mb-1.5">
-          <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500">Technique Focus</label>
-          <a href="bjj-flow.html" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider transition flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Flow Diagram →
-          </a>
-        </div>
-        <input id="t-focus" type="text" placeholder="e.g. Guard Retention, Kimura Trap" class="input-field w-full rounded-lg px-3.5 py-2.5 text-sm mb-4">
-
-        <button id="btn-attach-media" type="button" class="w-full flex items-center justify-center gap-2 border border-dashed border-zinc-700 hover:border-red-600 rounded-lg py-3 text-zinc-400 hover:text-red-500 text-xs font-bold uppercase tracking-wide transition">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-          Attach Photo / Video
-        </button>
-      </div>
-
-      <div class="card rounded-xl p-4">
-        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-4 flex items-center gap-2">
-          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Reflection
-        </h3>
+      <!-- ================= 10s RAPID LOG MODE ================= -->
+      <div id="mode-rapid-container" class="space-y-4">
         
-        <!-- Context Header (Shows Primary Position & Technique Focus) -->
-        <div id="concept-context-box" class="hidden bg-zinc-950 rounded-xl p-3.5 border border-red-900/60 mb-4">
-          <p id="primary-pos-badge" class="text-[9px] font-black uppercase tracking-widest text-red-500 mb-1"></p>
-          <p id="concept-context-text" class="text-xs text-zinc-200 font-medium leading-relaxed"></p>
+        <!-- Round Counter -->
+        <div class="card rounded-xl p-4 text-center">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Rounds Rolled</p>
+          <div class="flex items-center justify-center gap-6">
+            <button id="btn-minus-rounds" class="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 text-2xl font-black text-zinc-300 hover:border-red-600 transition">-</button>
+            <span id="rapid-round-count" class="text-5xl font-black italic text-white w-16 text-center">5</span>
+            <button id="btn-plus-rounds" class="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 text-2xl font-black text-red-500 hover:border-red-600 transition">+</button>
+          </div>
         </div>
 
-        <label id="learned-question-label" class="block text-[11px] font-bold uppercase tracking-wide text-zinc-400 mb-1.5">What Did You Learn?</label>
-        <textarea id="t-learned" rows="3" placeholder="What worked, what felt difficult, and what adjustments do you need to make?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+        <!-- Tap-to-Select Primary Positions Worked -->
+        <div class="card rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Primary Positions Worked (Tap All That Apply)</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Open Guard">Open Guard</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Closed Guard">Closed Guard</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Side Control">Side Control</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Mount">Mount</button>
+            <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center col-span-2" data-pos="Back Control">Back Control</button>
+          </div>
+        </div>
 
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Follow-Up Questions</label>
-        <textarea id="t-questions" rows="3" placeholder="What do you need to ask your coach?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none"></textarea>
+        <!-- Post-Roll Energy Rating -->
+        <div class="card rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Session Intensity / Output</p>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button class="energy-btn rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Flow / Light">Light</button>
+            <button class="energy-btn selected rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Moderate">Moderate</button>
+            <button class="energy-btn rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Hard Roll">Hard</button>
+            <button class="energy-btn rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Exhausting">Max</button>
+          </div>
+        </div>
+
+        <!-- Quick 1-Line Cue -->
+        <div class="card rounded-xl p-4">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Quick Note / Key Takeaway (Optional)</label>
+          <input id="rapid-note" type="text" placeholder="e.g. Underhook frame worked great in Side Control" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+        </div>
+
       </div>
 
-      <div class="card rounded-xl p-4">
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-2.5">Post-Training Mood</label>
-        <div class="grid grid-cols-3 gap-2 mb-5">
-          <button class="mood-btn rounded-lg py-3 text-2xl" data-mood="fired-up" type="button">😃</button>
-          <button class="mood-btn rounded-lg py-3 text-2xl" data-mood="neutral" type="button">😐</button>
-          <button class="mood-btn rounded-lg py-3 text-2xl" data-mood="wrecked" type="button">😤</button>
+
+      <!-- ================= FULL ENTRY MODE ================= -->
+      <div id="mode-full-container" class="card rounded-xl p-4 space-y-4 hidden">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Class / Session Type</label>
+          <input id="t-class" type="text" placeholder="e.g. Gi Fundamentals / Competition Sparring" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
         </div>
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-2.5">Sparring Rounds Rolled</label>
-        <div class="flex items-center justify-between bg-black border border-zinc-800 rounded-lg px-4 py-2.5">
-          <button id="rounds-minus" type="button" class="w-9 h-9 flex items-center justify-center rounded-md text-red-500 hover:bg-zinc-900 text-xl font-black">−</button>
-          <span id="rounds-value" class="text-2xl font-black italic">0</span>
-          <button id="rounds-plus" type="button" class="w-9 h-9 flex items-center justify-center rounded-md text-red-500 hover:bg-zinc-900 text-xl font-black">+</button>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Training Date</label>
+            <input id="t-date" type="date" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Rounds Rolled</label>
+            <input id="t-rounds" type="number" min="0" value="5" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Technique Focus / Position</label>
+          <input id="t-focus" type="text" placeholder="e.g. Side Control Bottom — Shrimp Guard Recovery" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs font-semibold text-white">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 mb-1">Execution &amp; Adjustments Reflection</label>
+          <textarea id="t-notes" rows="4" placeholder="What reactions did training partners give? Where did you feel stuck?" class="textarea-field w-full rounded-lg p-3 text-xs leading-relaxed"></textarea>
+        </div>
+
+        <!-- Media Attachment -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Attach Mat Photo / Video Clip</label>
+          <div class="relative border border-dashed border-zinc-800 hover:border-red-600 rounded-xl p-4 text-center bg-black/40 transition cursor-pointer">
+            <input id="file-input" type="file" accept="image/*,video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            <div id="upload-placeholder" class="space-y-1">
+              <p class="text-xs font-bold text-zinc-300">📷 / 🎥 Tap to upload clip or whiteboard photo</p>
+              <p class="text-[9px] text-zinc-500 uppercase font-semibold">Supports Images &amp; MP4 Videos (Max 50MB)</p>
+            </div>
+            <div id="preview-container" class="hidden mt-2">
+              <p id="preview-filename" class="text-xs font-bold text-red-400 truncate"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Previously Logged Entries for Today -->
+      <div>
+        <h3 class="font-black italic uppercase text-xs tracking-[0.2em] text-zinc-400 mb-3">Logged Sessions for This Date</h3>
+        <div id="session-history" class="space-y-3">
+          <p class="text-xs text-zinc-500 italic">No entries for this date yet.</p>
         </div>
       </div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-5 py-4 bg-gradient-to-t from-black via-black to-transparent">
-      <button id="btn-save-training" class="btn-primary w-full text-white font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
-        Save Training Log
+    <!-- Save Button -->
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-5 py-4 bg-gradient-to-t from-black via-black to-transparent z-20">
+      <button id="btn-save-log" class="btn-primary w-full text-white font-black italic uppercase tracking-wide text-sm py-4 rounded-xl">
+        ⚡ Save Rapid Session
       </button>
     </div>
   </div>
@@ -132,137 +179,207 @@
 <script src="config.js"></script>
 <script>
 (async function(){
-  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-
   const session = await requireSession();
   if(!session) return;
 
-  let currentMood = null;
-  let currentRounds = 0;
-  let existingId = null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramDate = urlParams.get('date');
+  const paramFocus = urlParams.get('focus');
+  const paramConcept = urlParams.get('concept');
+  const paramPrimary = urlParams.get('primary');
 
-  function fmtDate(d){
-    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${day}`;
+  const today = new Date().toISOString().split('T')[0];
+  const activeDate = paramDate || today;
+
+  document.getElementById('t-date').value = activeDate;
+  document.getElementById('log-date-header').textContent = `Training Log (${activeDate})`;
+
+  let activeMode = 'rapid'; // 'rapid' or 'full'
+  let rapidRounds = 5;
+  let selectedEnergy = 'Moderate';
+
+  // Mode Toggle Handlers
+  const tabRapid = document.getElementById('tab-rapid');
+  const tabFull = document.getElementById('tab-full');
+  const rapidContainer = document.getElementById('mode-rapid-container');
+  const fullContainer = document.getElementById('mode-full-container');
+  const btnSave = document.getElementById('btn-save-log');
+
+  tabRapid.addEventListener('click', () => {
+    activeMode = 'rapid';
+    tabRapid.classList.add('active');
+    tabFull.classList.remove('active');
+    rapidContainer.classList.remove('hidden');
+    fullContainer.classList.add('hidden');
+    btnSave.textContent = '⚡ Save Rapid Session';
+  });
+
+  tabFull.addEventListener('click', () => {
+    activeMode = 'full';
+    tabFull.classList.add('active');
+    tabRapid.classList.remove('active');
+    fullContainer.classList.remove('hidden');
+    rapidContainer.classList.add('hidden');
+    btnSave.textContent = 'Save Full Training Log';
+  });
+
+  // Prefill if coming from Flow Diagram
+  if (paramFocus) {
+    tabFull.click();
+    document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
   }
-  function todayStr(){ return fmtDate(new Date()); }
-  function parseDate(str){ const [y,m,d] = str.split('-').map(Number); return new Date(y, m-1, d); }
-  function humanDate(str){ const d = parseDate(str); return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
-  function getParam(name){ return new URLSearchParams(window.location.search).get(name); }
-
-  const selectedDate = getParam('date') || todayStr();
-  const autoFocusTechnique = getParam('focus');
-  const autoConcept = getParam('concept');
-  const autoPrimaryPos = getParam('primary');
-
-  document.getElementById('training-date-title').textContent = humanDate(selectedDate);
-
-  // Populate Technique Focus with Primary Position context
-  if (autoFocusTechnique) {
-    const focusVal = decodeURIComponent(autoFocusTechnique);
-    const primVal = autoPrimaryPos ? decodeURIComponent(autoPrimaryPos) : '';
-    document.getElementById('t-focus').value = primVal ? `${primVal} → ${focusVal}` : focusVal;
+  if (paramConcept) {
+    document.getElementById('t-notes').value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
   }
 
-  // Reframed concept reflection prompt (learning/adaptation focused)
-  if (autoConcept) {
-    const rawConcept = decodeURIComponent(autoConcept);
-    const cleanProcess = rawConcept.replace(/^Background Process:\s*/i, '');
-    const primText = autoPrimaryPos ? decodeURIComponent(autoPrimaryPos) : 'Target Position';
-    const techText = autoFocusTechnique ? decodeURIComponent(autoFocusTechnique) : '';
+  // Rapid Mode Round Counter
+  const roundCountEl = document.getElementById('rapid-round-count');
+  document.getElementById('btn-minus-rounds').addEventListener('click', () => {
+    if (rapidRounds > 0) rapidRounds--;
+    roundCountEl.textContent = rapidRounds;
+    document.getElementById('t-rounds').value = rapidRounds;
+  });
+  document.getElementById('btn-plus-rounds').addEventListener('click', () => {
+    rapidRounds++;
+    roundCountEl.textContent = rapidRounds;
+    document.getElementById('t-rounds').value = rapidRounds;
+  });
 
-    // Show context box
-    document.getElementById('concept-context-box').classList.remove('hidden');
-    document.getElementById('primary-pos-badge').textContent = `${primText} ${techText ? '• ' + techText : ''}`;
-    document.getElementById('concept-context-text').textContent = cleanProcess;
-
-    // Growth-focused question and placeholder
-    const questionLabel = document.getElementById('learned-question-label');
-    const learnedInput = document.getElementById('t-learned');
-
-    questionLabel.textContent = `Concept & Execution Reflection`;
-    learnedInput.placeholder = `How did focusing on this concept affect your exchanges today? What adjustments did you notice or need to make?`;
-  }
-
-  const { data: sessions, error } = await sb
-    .from('trainings')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('training_date', selectedDate)
-    .order('saved_at', { ascending: true });
-  if(error) console.error(error);
-
-  const last = (sessions && sessions[sessions.length-1]) || null;
-  if(last){
-    existingId = last.id;
-    document.getElementById('t-class').value = last.class_attended || '';
-    document.getElementById('t-coach').value = last.coach || '';
-    document.getElementById('t-partners').value = last.partners || '';
-    if (!autoFocusTechnique) document.getElementById('t-focus').value = last.focus || '';
-    document.getElementById('t-learned').value = last.learned || '';
-    document.getElementById('t-questions').value = last.questions || '';
-    currentMood = last.mood || null;
-    currentRounds = last.rounds || 0;
-  }
-  document.querySelectorAll('.mood-btn').forEach(b=> b.classList.toggle('selected', b.dataset.mood === currentMood));
-  document.getElementById('rounds-value').textContent = currentRounds;
-
-  document.querySelectorAll('.mood-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      currentMood = btn.dataset.mood;
-      document.querySelectorAll('.mood-btn').forEach(b=> b.classList.toggle('selected', b === btn));
+  // Tap Positional Badges
+  document.querySelectorAll('.pos-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      badge.classList.toggle('selected');
     });
   });
-  document.getElementById('rounds-plus').addEventListener('click', ()=>{
-    currentRounds++;
-    document.getElementById('rounds-value').textContent = currentRounds;
-  });
-  document.getElementById('rounds-minus').addEventListener('click', ()=>{
-    currentRounds = Math.max(0, currentRounds-1);
-    document.getElementById('rounds-value').textContent = currentRounds;
-  });
-  document.getElementById('btn-attach-media').addEventListener('click', ()=>{
-    alert('Media attachment coming soon.');
+
+  // Energy Buttons
+  document.querySelectorAll('.energy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.energy-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedEnergy = btn.dataset.energy;
+    });
   });
 
-  document.getElementById('btn-save-training').addEventListener('click', async ()=>{
-    const btn = document.getElementById('btn-save-training');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
+  // File handling for full mode
+  let selectedFile = null;
+  const fileInput = document.getElementById('file-input');
+  const previewContainer = document.getElementById('preview-container');
+  const previewFilename = document.getElementById('preview-filename');
 
-    const record = {
-      user_id: session.user.id,
-      training_date: selectedDate,
-      class_attended: document.getElementById('t-class').value,
-      coach: document.getElementById('t-coach').value,
-      partners: document.getElementById('t-partners').value,
-      focus: document.getElementById('t-focus').value,
-      learned: document.getElementById('t-learned').value,
-      questions: document.getElementById('t-questions').value,
-      mood: currentMood,
-      rounds: currentRounds,
-      saved_at: new Date().toISOString()
-    };
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      selectedFile = e.target.files[0];
+      previewFilename.textContent = `Attached: ${selectedFile.name}`;
+      previewContainer.classList.remove('hidden');
+    }
+  });
 
-    let dbError;
-    if(existingId){
-      const { error } = await sb.from('trainings').update(record).eq('id', existingId);
-      dbError = error;
+  async function loadHistory(){
+    const { data: logs } = await sb
+      .from('trainings')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('training_date', activeDate)
+      .order('created_at', { ascending: false });
+
+    const container = document.getElementById('session-history');
+    if (logs && logs.length > 0) {
+      container.innerHTML = logs.map(l => {
+        let mediaHtml = '';
+        if (l.media_url) {
+          const isVideo = l.media_url.match(/\.(mp4|mov|webm)$/i);
+          if (isVideo) {
+            mediaHtml = `<video src="${l.media_url}" controls class="w-full h-40 object-cover rounded-lg mt-2 border border-zinc-800"></video>`;
+          } else {
+            mediaHtml = `<img src="${l.media_url}" alt="Mat Media" class="w-full h-40 object-cover rounded-lg mt-2 border border-zinc-800">`;
+          }
+        }
+
+        return `
+          <div class="card rounded-xl p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black uppercase italic text-white">${l.class_attended || 'Session'}</span>
+              <span class="text-[10px] font-bold uppercase bg-red-950 text-red-400 border border-red-800 px-2 py-0.5 rounded-full">${l.rounds || 0} Rounds</span>
+            </div>
+            ${l.focus ? `<p class="text-xs font-bold text-red-500 uppercase">${l.focus}</p>` : ''}
+            ${l.notes ? `<p class="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap bg-black/50 p-2.5 rounded-lg border border-zinc-900">${l.notes}</p>` : ''}
+            ${mediaHtml}
+          </div>
+        `;
+      }).join('');
     } else {
-      const { error } = await sb.from('trainings').insert(record);
-      dbError = error;
+      container.innerHTML = `<p class="text-xs text-zinc-500 italic">No entries for ${activeDate} yet.</p>`;
+    }
+  }
+
+  // Save Event
+  btnSave.addEventListener('click', async () => {
+    btnSave.disabled = true;
+    btnSave.textContent = 'Saving...';
+
+    let payload = {};
+
+    if (activeMode === 'rapid') {
+      const selectedBadges = Array.from(document.querySelectorAll('.pos-badge.selected')).map(b => b.dataset.pos);
+      const focusText = selectedBadges.length > 0 ? selectedBadges.join(', ') : 'General Rolling';
+      const rapidNoteText = document.getElementById('rapid-note').value;
+
+      payload = {
+        user_id: session.user.id,
+        training_date: activeDate,
+        class_attended: `Rapid Log (${selectedEnergy})`,
+        rounds: rapidRounds,
+        focus: focusText,
+        notes: rapidNoteText ? `[Output: ${selectedEnergy}] ${rapidNoteText}` : `[Output: ${selectedEnergy}]`
+      };
+    } else {
+      let mediaUrl = null;
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
+        const { data: uploadData, error: uploadErr } = await sb.storage.from('mat-media').upload(fileName, selectedFile);
+
+        if (!uploadErr) {
+          const { data: urlData } = sb.storage.from('mat-media').getPublicUrl(fileName);
+          mediaUrl = urlData.publicUrl;
+        }
+      }
+
+      payload = {
+        user_id: session.user.id,
+        training_date: document.getElementById('t-date').value,
+        class_attended: document.getElementById('t-class').value || 'Full Session',
+        rounds: parseInt(document.getElementById('t-rounds').value, 10) || 0,
+        focus: document.getElementById('t-focus').value,
+        notes: document.getElementById('t-notes').value,
+        media_url: mediaUrl
+      };
     }
 
-    if(dbError){
-      console.error(dbError);
-      btn.disabled = false;
-      btn.textContent = 'Save Training Log';
-      alert('Could not save — check your connection and try again.');
+    const { error } = await sb.from('trainings').insert(payload);
+    if(error){
+      console.error(error);
+      alert('Could not save training log.');
+      btnSave.disabled = false;
+      btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
       return;
     }
-    window.location.href = 'index.html';
+
+    // Reset inputs
+    document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
+    document.getElementById('rapid-note').value = '';
+    document.getElementById('t-notes').value = '';
+    selectedFile = null;
+    previewContainer.classList.add('hidden');
+
+    btnSave.disabled = false;
+    btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
+
+    await loadHistory();
   });
+
+  await loadHistory();
 
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('app-content').classList.remove('hidden');
