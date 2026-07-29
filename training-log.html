@@ -19,8 +19,14 @@
   * { font-family: 'Inter', sans-serif; }
   html, body { background:#000; }
   .card { background:#0a0a0b; border:1px solid #18181b; }
-  .input-field, .textarea-field, .select-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: all .2s ease; }
+  .input-field, .textarea-field, .select-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: border-color .2s ease, box-shadow .2s ease; }
   .input-field:focus, .textarea-field:focus, .select-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
+
+  /* Hide scrollbar & make height auto-adjust */
+  .textarea-field {
+    resize: none;
+    overflow: hidden;
+  }
 
   .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
   .btn-primary:hover { background:#ef4444; }
@@ -32,6 +38,10 @@
 
   .energy-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; }
   .energy-btn.selected { background: #18181b; border-color: #dc2626; color: #f87171; box-shadow: inset 0 0 0 1px #dc2626; }
+
+  /* Mood Smiley Styling */
+  .mood-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; opacity: 0.6; }
+  .mood-btn.selected { opacity: 1; border-color: #dc2626; background: rgba(220,38,38,0.12); box-shadow: 0 0 12px rgba(220,38,38,0.3); transform: scale(1.05); }
 
   .mode-tab { transition: all .15s ease; border-bottom: 2px solid transparent; }
   .mode-tab.active { border-color: #dc2626; color: #ffffff; }
@@ -82,6 +92,29 @@
           </div>
         </div>
 
+        <!-- Session Mood / Smiley Selector (Rapid) -->
+        <div class="card rounded-xl p-4">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Session Feel / Mood</p>
+          <div class="grid grid-cols-4 gap-2">
+            <button class="mood-btn rapid-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😤 Tough">
+              <span class="text-2xl mb-1">😤</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Tough</span>
+            </button>
+            <button class="mood-btn rapid-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😐 Neutral">
+              <span class="text-2xl mb-1">😐</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Neutral</span>
+            </button>
+            <button class="mood-btn rapid-mood selected rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😊 Good">
+              <span class="text-2xl mb-1">😊</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Good</span>
+            </button>
+            <button class="mood-btn rapid-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="🔥 Peak">
+              <span class="text-2xl mb-1">🔥</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Peak</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Tap-to-Select Primary Positions Worked -->
         <div class="card rounded-xl p-4">
           <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Primary Positions Worked (Tap All That Apply)</p>
@@ -129,6 +162,29 @@
           <div>
             <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Rounds Rolled</label>
             <input id="t-rounds" type="number" min="0" value="5" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+          </div>
+        </div>
+
+        <!-- Session Mood / Smiley Selector (Full) -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Session Feel / Mood Rating</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button class="mood-btn full-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😤 Tough">
+              <span class="text-2xl mb-1">😤</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Tough</span>
+            </button>
+            <button class="mood-btn full-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😐 Neutral">
+              <span class="text-2xl mb-1">😐</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Neutral</span>
+            </button>
+            <button class="mood-btn full-mood selected rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😊 Good">
+              <span class="text-2xl mb-1">😊</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Good</span>
+            </button>
+            <button class="mood-btn full-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="🔥 Peak">
+              <span class="text-2xl mb-1">🔥</span>
+              <span class="text-[9px] font-bold uppercase text-zinc-400">Peak</span>
+            </button>
           </div>
         </div>
 
@@ -204,9 +260,19 @@
   document.getElementById('t-date').value = activeDate;
   document.getElementById('log-date-header').textContent = `Training Log (${activeDate})`;
 
-  let activeMode = 'rapid'; // 'rapid' or 'full'
+  let activeMode = 'rapid'; 
   let rapidRounds = 5;
   let selectedEnergy = 'Moderate';
+  let rapidMood = '😊 Good';
+  let fullMood = '😊 Good';
+
+  // Dynamic Textarea Auto-Resizing Function
+  const notesTextarea = document.getElementById('t-notes');
+  function autoResizeTextarea() {
+    notesTextarea.style.height = 'auto';
+    notesTextarea.style.height = notesTextarea.scrollHeight + 'px';
+  }
+  notesTextarea.addEventListener('input', autoResizeTextarea);
 
   // Mode Toggle Handlers
   const tabRapid = document.getElementById('tab-rapid');
@@ -231,6 +297,7 @@
     fullContainer.classList.remove('hidden');
     rapidContainer.classList.add('hidden');
     btnSave.textContent = 'Save Full Training Log';
+    setTimeout(autoResizeTextarea, 50); 
   });
 
   // Prefill if coming from Flow Diagram
@@ -239,7 +306,8 @@
     document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
   }
   if (paramConcept) {
-    document.getElementById('t-notes').value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
+    notesTextarea.value = `Technical Concept Cues:\n${paramConcept}\n\nSession Notes:\n`;
+    autoResizeTextarea();
   }
 
   // Rapid Mode Round Counter
@@ -268,6 +336,24 @@
       document.querySelectorAll('.energy-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedEnergy = btn.dataset.energy;
+    });
+  });
+
+  // Smiley / Mood Buttons Handler (Rapid Mode)
+  document.querySelectorAll('.rapid-mood').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.rapid-mood').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      rapidMood = btn.dataset.mood;
+    });
+  });
+
+  // Smiley / Mood Buttons Handler (Full Mode)
+  document.querySelectorAll('.full-mood').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.full-mood').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      fullMood = btn.dataset.mood;
     });
   });
 
@@ -338,10 +424,10 @@
       payload = {
         user_id: session.user.id,
         training_date: activeDate,
-        class_attended: `Rapid Log (${selectedEnergy})`,
+        class_attended: `Rapid Log (${rapidMood})`,
         rounds: rapidRounds,
         focus: focusText,
-        notes: rapidNoteText ? `[Output: ${selectedEnergy}] ${rapidNoteText}` : `[Output: ${selectedEnergy}]`
+        notes: rapidNoteText ? `[Feel: ${rapidMood} | Intensity: ${selectedEnergy}]\n${rapidNoteText}` : `[Feel: ${rapidMood} | Intensity: ${selectedEnergy}]`
       };
     } else {
       let mediaUrl = null;
@@ -358,17 +444,17 @@
 
       const instVal = document.getElementById('t-instructor').value;
       const partVal = document.getElementById('t-partners').value;
-      let fullNotes = document.getElementById('t-notes').value;
+      let fullNotes = notesTextarea.value;
 
-      let metaPrefix = '';
+      let metaPrefix = `Feel: ${fullMood}\n`;
       if (instVal) metaPrefix += `Instructor/Academy: ${instVal}\n`;
       if (partVal) metaPrefix += `Partners: ${partVal}\n`;
-      if (metaPrefix) fullNotes = `${metaPrefix}\n${fullNotes}`;
+      fullNotes = `${metaPrefix}\n${fullNotes}`;
 
       payload = {
         user_id: session.user.id,
         training_date: document.getElementById('t-date').value,
-        class_attended: document.getElementById('t-class').value || 'Full Session',
+        class_attended: document.getElementById('t-class').value || `Full Session (${fullMood})`,
         rounds: parseInt(document.getElementById('t-rounds').value, 10) || 0,
         focus: document.getElementById('t-focus').value,
         notes: fullNotes,
@@ -390,7 +476,8 @@
     document.getElementById('rapid-note').value = '';
     document.getElementById('t-instructor').value = '';
     document.getElementById('t-partners').value = '';
-    document.getElementById('t-notes').value = '';
+    notesTextarea.value = '';
+    notesTextarea.style.height = 'auto'; 
     selectedFile = null;
     previewContainer.classList.add('hidden');
 
