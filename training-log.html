@@ -22,24 +22,20 @@
   .input-field, .textarea-field, .select-field { background:#0a0a0b; border:1px solid #27272a; color:#fafafa; transition: border-color .2s ease, box-shadow .2s ease; }
   .input-field:focus, .textarea-field:focus, .select-field:focus { outline: none; border-color:#dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.18); }
 
-  /* Hide scrollbar & make height auto-adjust */
-  .textarea-field {
-    resize: none;
-    overflow: hidden;
-  }
+  .textarea-field { resize: none; overflow: hidden; }
 
   .btn-primary { background:#dc2626; box-shadow: 0 0 22px rgba(220,38,38,0.35); transition: all .18s ease; }
   .btn-primary:hover { background:#ef4444; }
-  .btn-ghost { border:1.5px solid #dc2626; color:#f87171; background: rgba(220,38,38,0.04); transition: all .18s ease; }
 
-  /* Tap Badge Toggle Styling */
-  .pos-badge { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; user-select: none; }
+  .pos-badge, .sub-badge { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; user-select: none; }
   .pos-badge.selected { background: #dc2626; border-color: #f87171; color: #ffffff; box-shadow: 0 0 12px rgba(220,38,38,0.4); }
+  
+  .sub-given.selected { background: #166534; border-color: #4ade80; color: #ffffff; box-shadow: 0 0 10px rgba(34,197,94,0.4); }
+  .sub-taken.selected { background: #991b1b; border-color: #f87171; color: #ffffff; box-shadow: 0 0 10px rgba(220,38,38,0.4); }
 
   .energy-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; }
   .energy-btn.selected { background: #18181b; border-color: #dc2626; color: #f87171; box-shadow: inset 0 0 0 1px #dc2626; }
 
-  /* Mood Smiley Styling */
   .mood-btn { transition: all .15s ease; border: 1px solid #27272a; cursor: pointer; opacity: 0.6; }
   .mood-btn.selected { opacity: 1; border-color: #dc2626; background: rgba(220,38,38,0.12); box-shadow: 0 0 12px rgba(220,38,38,0.3); transform: scale(1.05); }
 
@@ -49,6 +45,9 @@
   #loading-overlay { background:#000; }
   .spinner { border: 2.5px solid #27272a; border-top-color:#dc2626; border-radius:50%; width:28px; height:28px; animation: spin .7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  
+  .mic-active { animation: pulse 1s infinite alternate; background: #dc2626 !important; }
+  @keyframes pulse { from { box-shadow: 0 0 5px #dc2626; } to { box-shadow: 0 0 20px #ef4444; } }
 </style>
 </head>
 <body class="bg-black text-zinc-100">
@@ -71,7 +70,7 @@
       <a href="bjj-flow.html" class="text-[10px] font-bold text-red-500 hover:text-red-400 uppercase tracking-wider bg-zinc-900 border border-zinc-800 px-2.5 py-1.5 rounded-lg transition">Flow Map 🗺️</a>
     </div>
 
-    <!-- Mode Selector Tabs -->
+    <!-- Mode Tabs -->
     <div class="flex border-b border-zinc-900 bg-zinc-950 px-5 text-xs font-bold uppercase tracking-wider text-zinc-500">
       <button id="tab-rapid" class="mode-tab active flex-1 py-3 text-center">⚡ 10s Rapid Log</button>
       <button id="tab-full" class="mode-tab flex-1 py-3 text-center">📝 Full Journal Entry</button>
@@ -79,7 +78,7 @@
 
     <div class="flex-1 px-5 py-5 space-y-5 pb-32">
 
-      <!-- ================= 10s RAPID LOG MODE ================= -->
+      <!-- ================= RAPID MODE ================= -->
       <div id="mode-rapid-container" class="space-y-4">
         
         <!-- Round Counter -->
@@ -92,7 +91,31 @@
           </div>
         </div>
 
-        <!-- Session Mood / Smiley Selector (Rapid) -->
+        <!-- Submissions Landed vs Caught -->
+        <div class="card rounded-xl p-4 space-y-3">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-500 mb-2">🟢 Submissions Landed (Hits)</p>
+            <div class="flex flex-wrap gap-1.5">
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar">Armbar</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle">Triangle</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC">RNC</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura">Kimura</button>
+              <button class="sub-badge sub-given text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine">Guillotine</button>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-zinc-900">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-red-500 mb-2">🔴 Caught In (Defects / Areas to Fix)</p>
+            <div class="flex flex-wrap gap-1.5">
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Armbar">Armbar</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Triangle">Triangle</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="RNC">RNC</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Kimura">Kimura</button>
+              <button class="sub-badge sub-taken text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-zinc-900" data-sub="Guillotine">Guillotine</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Session Mood -->
         <div class="card rounded-xl p-4">
           <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Session Feel / Mood</p>
           <div class="grid grid-cols-4 gap-2">
@@ -115,9 +138,9 @@
           </div>
         </div>
 
-        <!-- Tap-to-Select Primary Positions Worked -->
+        <!-- Primary Positions Worked -->
         <div class="card rounded-xl p-4">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Primary Positions Worked (Tap All That Apply)</p>
+          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Primary Positions Worked</p>
           <div class="grid grid-cols-2 gap-2">
             <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Open Guard">Open Guard</button>
             <button class="pos-badge rounded-lg py-3 px-2 text-xs font-bold uppercase text-zinc-300 text-center" data-pos="Closed Guard">Closed Guard</button>
@@ -127,27 +150,21 @@
           </div>
         </div>
 
-        <!-- Post-Roll Energy Rating -->
+        <!-- Voice-to-Text Quick Cue -->
         <div class="card rounded-xl p-4">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">Session Intensity / Output</p>
-          <div class="grid grid-cols-4 gap-1.5">
-            <button class="energy-btn rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Flow / Light">Light</button>
-            <button class="energy-btn selected rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Moderate">Moderate</button>
-            <button class="energy-btn rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Hard Roll">Hard</button>
-            <button class="energy-btn rounded-lg py-2.5 text-[10px] font-bold uppercase text-zinc-400 text-center" data-energy="Exhausting">Max</button>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Quick Note / Voice Cue</label>
+            <button id="btn-voice-rapid" class="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg hover:border-red-600 transition">
+              <span>🎙️ Voice Dictate</span>
+            </button>
           </div>
-        </div>
-
-        <!-- Quick 1-Line Cue -->
-        <div class="card rounded-xl p-4">
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Quick Note / Key Takeaway (Optional)</label>
-          <input id="rapid-note" type="text" placeholder="e.g. Underhook frame worked great in Side Control" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
+          <input id="rapid-note" type="text" placeholder="Tap mic to dictate or type key takeaway..." class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
         </div>
 
       </div>
 
 
-      <!-- ================= FULL ENTRY MODE ================= -->
+      <!-- ================= FULL MODE ================= -->
       <div id="mode-full-container" class="card rounded-xl p-4 space-y-4 hidden">
         <div>
           <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Class / Session Type</label>
@@ -162,29 +179,6 @@
           <div>
             <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Rounds Rolled</label>
             <input id="t-rounds" type="number" min="0" value="5" class="input-field w-full rounded-lg px-3.5 py-2.5 text-xs">
-          </div>
-        </div>
-
-        <!-- Session Mood / Smiley Selector (Full) -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2">Session Feel / Mood Rating</label>
-          <div class="grid grid-cols-4 gap-2">
-            <button class="mood-btn full-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😤 Tough">
-              <span class="text-2xl mb-1">😤</span>
-              <span class="text-[9px] font-bold uppercase text-zinc-400">Tough</span>
-            </button>
-            <button class="mood-btn full-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😐 Neutral">
-              <span class="text-2xl mb-1">😐</span>
-              <span class="text-[9px] font-bold uppercase text-zinc-400">Neutral</span>
-            </button>
-            <button class="mood-btn full-mood selected rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="😊 Good">
-              <span class="text-2xl mb-1">😊</span>
-              <span class="text-[9px] font-bold uppercase text-zinc-400">Good</span>
-            </button>
-            <button class="mood-btn full-mood rounded-xl py-3 flex flex-col items-center justify-center bg-zinc-950" data-mood="🔥 Peak">
-              <span class="text-2xl mb-1">🔥</span>
-              <span class="text-[9px] font-bold uppercase text-zinc-400">Peak</span>
-            </button>
           </div>
         </div>
 
@@ -204,8 +198,13 @@
         </div>
 
         <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-red-500 mb-1">Execution &amp; Adjustments Reflection</label>
-          <textarea id="t-notes" rows="4" placeholder="What reactions did training partners give? Where did you feel stuck?" class="textarea-field w-full rounded-lg p-3 text-xs leading-relaxed"></textarea>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-red-500">Execution Reflection</label>
+            <button id="btn-voice-full" class="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg hover:border-red-600 transition">
+              <span>🎙️ Dictate Reflection</span>
+            </button>
+          </div>
+          <textarea id="t-notes" rows="4" placeholder="Speak or type what happened..." class="textarea-field w-full rounded-lg p-3 text-xs leading-relaxed"></textarea>
         </div>
 
         <!-- Media Attachment -->
@@ -224,7 +223,7 @@
         </div>
       </div>
 
-      <!-- Previously Logged Entries for Today -->
+      <!-- History -->
       <div>
         <h3 class="font-black italic uppercase text-xs tracking-[0.2em] text-zinc-400 mb-3">Logged Sessions for This Date</h3>
         <div id="session-history" class="space-y-3">
@@ -262,11 +261,59 @@
 
   let activeMode = 'rapid'; 
   let rapidRounds = 5;
-  let selectedEnergy = 'Moderate';
   let rapidMood = '😊 Good';
-  let fullMood = '😊 Good';
 
-  // Dynamic Textarea Auto-Resizing Function
+  // Speech Recognition Setup
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function setupDictation(btnId, targetInputId) {
+    const btn = document.getElementById(btnId);
+    const target = document.getElementById(targetInputId);
+
+    if (!SpeechRecognition) {
+      btn.style.display = 'none'; // Browser unsupported
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    let isListening = false;
+
+    btn.addEventListener('click', () => {
+      if (!isListening) {
+        recognition.start();
+        isListening = true;
+        btn.classList.add('mic-active');
+        btn.querySelector('span').textContent = '🔴 Listening...';
+      } else {
+        recognition.stop();
+        isListening = false;
+        btn.classList.remove('mic-active');
+        btn.querySelector('span').textContent = '🎙️ Voice Dictate';
+      }
+    });
+
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      target.value = target.value ? `${target.value} ${transcript}` : transcript;
+      if(target.tagName === 'TEXTAREA') {
+        target.style.height = 'auto';
+        target.style.height = target.scrollHeight + 'px';
+      }
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      btn.classList.remove('mic-active');
+      btn.querySelector('span').textContent = '🎙️ Voice Dictate';
+    };
+  }
+
+  setupDictation('btn-voice-rapid', 'rapid-note');
+  setupDictation('btn-voice-full', 't-notes');
+
+  // Textarea Auto-Resizing
   const notesTextarea = document.getElementById('t-notes');
   function autoResizeTextarea() {
     notesTextarea.style.height = 'auto';
@@ -274,7 +321,7 @@
   }
   notesTextarea.addEventListener('input', autoResizeTextarea);
 
-  // Mode Toggle Handlers
+  // Tabs
   const tabRapid = document.getElementById('tab-rapid');
   const tabFull = document.getElementById('tab-full');
   const rapidContainer = document.getElementById('mode-rapid-container');
@@ -300,7 +347,6 @@
     setTimeout(autoResizeTextarea, 50); 
   });
 
-  // Prefill if coming from Flow Diagram
   if (paramFocus) {
     tabFull.click();
     document.getElementById('t-focus').value = paramPrimary ? `${paramPrimary} — ${paramFocus}` : paramFocus;
@@ -310,7 +356,7 @@
     autoResizeTextarea();
   }
 
-  // Rapid Mode Round Counter
+  // Round Counter
   const roundCountEl = document.getElementById('rapid-round-count');
   document.getElementById('btn-minus-rounds').addEventListener('click', () => {
     if (rapidRounds > 0) rapidRounds--;
@@ -323,23 +369,11 @@
     document.getElementById('t-rounds').value = rapidRounds;
   });
 
-  // Tap Positional Badges
-  document.querySelectorAll('.pos-badge').forEach(badge => {
-    badge.addEventListener('click', () => {
-      badge.classList.toggle('selected');
-    });
+  // Badges
+  document.querySelectorAll('.pos-badge, .sub-badge').forEach(badge => {
+    badge.addEventListener('click', () => badge.classList.toggle('selected'));
   });
 
-  // Energy Buttons
-  document.querySelectorAll('.energy-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.energy-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedEnergy = btn.dataset.energy;
-    });
-  });
-
-  // Smiley / Mood Buttons Handler (Rapid Mode)
   document.querySelectorAll('.rapid-mood').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.rapid-mood').forEach(b => b.classList.remove('selected'));
@@ -348,16 +382,6 @@
     });
   });
 
-  // Smiley / Mood Buttons Handler (Full Mode)
-  document.querySelectorAll('.full-mood').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.full-mood').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      fullMood = btn.dataset.mood;
-    });
-  });
-
-  // File handling for full mode
   let selectedFile = null;
   const fileInput = document.getElementById('file-input');
   const previewContainer = document.getElementById('preview-container');
@@ -399,6 +423,8 @@
               <span class="text-[10px] font-bold uppercase bg-red-950 text-red-400 border border-red-800 px-2 py-0.5 rounded-full">${l.rounds || 0} Rounds</span>
             </div>
             ${l.focus ? `<p class="text-xs font-bold text-red-500 uppercase">${l.focus}</p>` : ''}
+            ${l.subs_given ? `<p class="text-[10px] text-emerald-400 font-bold">🟢 Subs Landed: ${l.subs_given}</p>` : ''}
+            ${l.subs_taken ? `<p class="text-[10px] text-red-400 font-bold">🔴 Caught In: ${l.subs_taken}</p>` : ''}
             ${l.notes ? `<p class="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap bg-black/50 p-2.5 rounded-lg border border-zinc-900">${l.notes}</p>` : ''}
             ${mediaHtml}
           </div>
@@ -414,6 +440,9 @@
     btnSave.disabled = true;
     btnSave.textContent = 'Saving...';
 
+    const subsGiven = Array.from(document.querySelectorAll('.sub-given.selected')).map(b => b.dataset.sub).join(', ');
+    const subsTaken = Array.from(document.querySelectorAll('.sub-taken.selected')).map(b => b.dataset.sub).join(', ');
+
     let payload = {};
 
     if (activeMode === 'rapid') {
@@ -427,7 +456,9 @@
         class_attended: `Rapid Log (${rapidMood})`,
         rounds: rapidRounds,
         focus: focusText,
-        notes: rapidNoteText ? `[Feel: ${rapidMood} | Intensity: ${selectedEnergy}]\n${rapidNoteText}` : `[Feel: ${rapidMood} | Intensity: ${selectedEnergy}]`
+        subs_given: subsGiven,
+        subs_taken: subsTaken,
+        notes: rapidNoteText ? `[Feel: ${rapidMood}]\n${rapidNoteText}` : `[Feel: ${rapidMood}]`
       };
     } else {
       let mediaUrl = null;
@@ -446,17 +477,19 @@
       const partVal = document.getElementById('t-partners').value;
       let fullNotes = notesTextarea.value;
 
-      let metaPrefix = `Feel: ${fullMood}\n`;
+      let metaPrefix = '';
       if (instVal) metaPrefix += `Instructor/Academy: ${instVal}\n`;
       if (partVal) metaPrefix += `Partners: ${partVal}\n`;
-      fullNotes = `${metaPrefix}\n${fullNotes}`;
+      if (metaPrefix) fullNotes = `${metaPrefix}\n${fullNotes}`;
 
       payload = {
         user_id: session.user.id,
         training_date: document.getElementById('t-date').value,
-        class_attended: document.getElementById('t-class').value || `Full Session (${fullMood})`,
+        class_attended: document.getElementById('t-class').value || 'Full Session',
         rounds: parseInt(document.getElementById('t-rounds').value, 10) || 0,
         focus: document.getElementById('t-focus').value,
+        subs_given: subsGiven,
+        subs_taken: subsTaken,
         notes: fullNotes,
         media_url: mediaUrl
       };
@@ -464,15 +497,15 @@
 
     const { error } = await sb.from('trainings').insert(payload);
     if(error){
-      console.error(error);
-      alert('Could not save training log.');
+      console.error('Supabase Error:', error);
+      alert(`Could not save log: ${error.message || 'Unknown error'}`);
       btnSave.disabled = false;
       btnSave.textContent = activeMode === 'rapid' ? '⚡ Save Rapid Session' : 'Save Full Training Log';
       return;
     }
 
-    // Reset inputs
-    document.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('selected'));
+    // Reset
+    document.querySelectorAll('.pos-badge, .sub-badge').forEach(b => b.classList.remove('selected'));
     document.getElementById('rapid-note').value = '';
     document.getElementById('t-instructor').value = '';
     document.getElementById('t-partners').value = '';
