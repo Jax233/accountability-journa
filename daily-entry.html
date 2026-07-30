@@ -94,33 +94,15 @@
           </div>
         </div>
 
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-2">Objectives</label>
-        <div id="objectives-list" class="space-y-2 mb-4">
-          <div class="flex items-center gap-3 cursor-pointer obj-row" data-key="obj-workout">
-            <div class="check-box w-5 h-5 rounded border border-zinc-700 flex items-center justify-center shrink-0">
-              <svg class="check-icon hidden" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4"><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <span class="text-sm text-zinc-300">Complete Workout</span>
-          </div>
-          <div class="flex items-center gap-3 cursor-pointer obj-row" data-key="obj-bjj">
-            <div class="check-box w-5 h-5 rounded border border-zinc-700 flex items-center justify-center shrink-0">
-              <svg class="check-icon hidden" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4"><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <span class="text-sm text-zinc-300">Complete BJJ</span>
-          </div>
-          <div class="flex items-center gap-3 cursor-pointer obj-row" data-key="obj-hydration">
-            <div class="check-box w-5 h-5 rounded border border-zinc-700 flex items-center justify-center shrink-0">
-              <svg class="check-icon hidden" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4"><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <span class="text-sm text-zinc-300">Hydration Goal</span>
-          </div>
-          <div class="flex items-center gap-3 cursor-pointer obj-row" data-key="obj-checkin">
-            <div class="check-box w-5 h-5 rounded border border-zinc-700 flex items-center justify-center shrink-0">
-              <svg class="check-icon hidden" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4"><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <span class="text-sm text-zinc-300">Check in with a Friend</span>
-          </div>
+        <!-- Dynamic Objectives Section -->
+        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Objectives</label>
+        <div class="flex gap-2 mb-3">
+          <input id="obj-input" type="text" placeholder="Add an objective (e.g. 2k Calories, Mobility)" class="input-field flex-1 rounded-lg px-3.5 py-2 text-sm">
+          <button id="btn-add-obj" type="button" class="bg-zinc-800 hover:bg-red-600 hover:text-white border border-zinc-700 hover:border-red-600 text-zinc-300 font-bold text-xs uppercase px-3.5 py-2 rounded-lg transition shrink-0 flex items-center gap-1">
+            <span>+ Add</span>
+          </button>
         </div>
+        <div id="objectives-list" class="space-y-2 mb-4"></div>
 
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Today's Goals</label>
         <textarea id="d-goals" rows="3" placeholder="What does a win look like today?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none"></textarea>
@@ -160,7 +142,15 @@
   const session = await requireSession();
   if(!session) return;
 
+  // Key-value store for active objectives: { "Complete Workout": true/false }
   let currentObjectives = {};
+
+  const DEFAULT_OBJECTIVES = [
+    "Complete Workout",
+    "Complete BJJ",
+    "Hydration Goal",
+    "Check in with a Friend"
+  ];
 
   const AFFIRMATIONS = [
     "I am built for this.",
@@ -233,7 +223,6 @@
     "The hardest part is starting, and I've already started."
   ];
 
-  // Deterministic pick so the same date always gets the same affirmation unless shuffled
   function hashStringToInt(str){
     let h = 0;
     for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) | 0; }
@@ -257,6 +246,12 @@
   function humanDate(str){ const d = parseDate(str); return `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`; }
   function getParam(name){ return new URLSearchParams(window.location.search).get(name); }
 
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function(m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+  }
+
   const selectedDate = getParam('date') || todayStr();
   document.getElementById('daily-date-title').textContent = humanDate(selectedDate);
 
@@ -268,7 +263,6 @@
     .maybeSingle();
   if(error) console.error(error);
 
-  // Use the previously saved affirmation if one exists for this day, otherwise auto-generate one
   setAffirmation((entry && entry.affirmation) || pickAffirmationForDate(selectedDate));
 
   document.getElementById('btn-shuffle-affirmation').addEventListener('click', ()=>{
@@ -280,6 +274,7 @@
     setAffirmation(next);
   });
 
+  // Load entry values or set default objectives if entry is new
   if(entry){
     document.getElementById('d-grat-1').value = (entry.gratitude && entry.gratitude[0]) || '';
     document.getElementById('d-grat-2').value = (entry.gratitude && entry.gratitude[1]) || '';
@@ -289,19 +284,82 @@
     document.getElementById('d-steps-today').value = entry.steps_today || '';
     document.getElementById('d-steps-tomorrow').value = entry.steps_tomorrow || '';
     currentObjectives = entry.objectives || {};
+  } else {
+    DEFAULT_OBJECTIVES.forEach(title => {
+      currentObjectives[title] = false;
+    });
   }
 
-  document.querySelectorAll('.obj-row').forEach(row=>{
-    const key = row.dataset.key;
-    const checked = !!currentObjectives[key];
-    row.querySelector('.check-box').classList.toggle('checked', checked);
-    row.querySelector('.check-icon').classList.toggle('hidden', !checked);
-    row.addEventListener('click', ()=>{
-      currentObjectives[key] = !currentObjectives[key];
-      row.querySelector('.check-box').classList.toggle('checked', currentObjectives[key]);
-      row.querySelector('.check-icon').classList.toggle('hidden', !currentObjectives[key]);
+  // Objective Management Logic
+  function renderObjectives(){
+    const list = document.getElementById('objectives-list');
+    const keys = Object.keys(currentObjectives);
+
+    if(keys.length === 0){
+      list.innerHTML = `<p class="text-xs text-zinc-500 italic py-1">No objectives added for today yet.</p>`;
+      return;
+    }
+
+    list.innerHTML = keys.map(key => {
+      const isChecked = !!currentObjectives[key];
+      return `
+        <div class="flex items-center justify-between gap-2 bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-2 px-3 group hover:border-zinc-700 transition">
+          <div class="flex items-center gap-3 cursor-pointer flex-1 obj-toggle-btn" data-key="${escapeHtml(key)}">
+            <div class="check-box w-5 h-5 rounded border border-zinc-700 flex items-center justify-center shrink-0 ${isChecked ? 'checked' : ''}">
+              <svg class="check-icon ${isChecked ? '' : 'hidden'}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <span class="text-sm font-medium ${isChecked ? 'text-zinc-500 line-through' : 'text-zinc-200'}">${escapeHtml(key)}</span>
+          </div>
+          <button type="button" class="obj-remove-btn text-zinc-500 hover:text-red-500 p-1 rounded transition" data-key="${escapeHtml(key)}" title="Remove objective">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    // Attach click triggers for completion toggle
+    list.querySelectorAll('.obj-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        currentObjectives[key] = !currentObjectives[key];
+        renderObjectives();
+      });
     });
+
+    // Attach click triggers for objective deletion
+    list.querySelectorAll('.obj-remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const key = btn.dataset.key;
+        delete currentObjectives[key];
+        renderObjectives();
+      });
+    });
+  }
+
+  function addObjectiveFromInput(){
+    const input = document.getElementById('obj-input');
+    const val = input.value.trim();
+    if(!val) return;
+    
+    if(!(val in currentObjectives)){
+      currentObjectives[val] = false;
+      renderObjectives();
+    }
+    input.value = '';
+    input.focus();
+  }
+
+  document.getElementById('btn-add-obj').addEventListener('click', addObjectiveFromInput);
+  document.getElementById('obj-input').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      addObjectiveFromInput();
+    }
   });
+
+  // Initial render of loaded objectives
+  renderObjectives();
 
   document.getElementById('btn-save-daily').addEventListener('click', async ()=>{
     const btn = document.getElementById('btn-save-daily');
