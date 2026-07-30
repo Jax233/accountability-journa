@@ -63,12 +63,8 @@
     </div>
 
     <div class="flex-1 px-5 py-5 space-y-5 pb-28">
-      <!-- Morning Setup -->
+      <!-- Morning Setup Card (Title Removed) -->
       <div class="card rounded-xl p-4">
-        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mb-4 flex items-center gap-2">
-          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Morning Setup
-        </h3>
-
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Daily Affirmation</label>
         <div class="flex items-center gap-2 mb-4">
           <p id="d-affirmation-display" class="flex-1 bg-black border border-zinc-800 rounded-lg px-3.5 py-3 text-sm text-white font-semibold italic"></p>
@@ -102,10 +98,7 @@
             <span>+ Add</span>
           </button>
         </div>
-        <div id="objectives-list" class="space-y-2 mb-4"></div>
-
-        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Today's Goals</label>
-        <textarea id="d-goals" rows="3" placeholder="What does a win look like today?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none"></textarea>
+        <div id="objectives-list" class="space-y-2"></div>
       </div>
 
       <!-- Evening Review -->
@@ -114,12 +107,20 @@
           <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Evening Review
         </h3>
 
+        <!-- Today's Goals Moved Here -->
+        <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Today's Goals</label>
+        <textarea id="d-goals" rows="3" placeholder="What does a win look like today?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
+
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Daily Update / Brain Dump</label>
         <textarea id="d-braindump" rows="4" placeholder="Let it out. No filter." class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
 
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Steps Taken Today</label>
         <textarea id="d-steps-today" rows="3" placeholder="What did you actually do?" class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none mb-4"></textarea>
 
+        <!-- Added Tomorrow's Plan Title -->
+        <h3 class="font-black italic uppercase text-red-600 text-xs tracking-[0.2em] mt-6 mb-3 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-red-600 rounded-full inline-block"></span> Tomorrow's Plan
+        </h3>
         <label class="block text-[11px] font-bold uppercase tracking-wide text-zinc-500 mb-1.5">Steps For Tomorrow (Reduce the Friction)</label>
         <textarea id="d-steps-tomorrow" rows="3" placeholder="Make it easy for future you." class="textarea-field w-full rounded-lg px-3.5 py-2.5 text-sm resize-none"></textarea>
       </div>
@@ -142,7 +143,6 @@
   const session = await requireSession();
   if(!session) return;
 
-  // Key-value store for active objectives: { "Complete Workout": true/false }
   let currentObjectives = {};
 
   const DEFAULT_OBJECTIVES = [
@@ -255,6 +255,7 @@
   const selectedDate = getParam('date') || todayStr();
   document.getElementById('daily-date-title').textContent = humanDate(selectedDate);
 
+  // Load today's entry
   const { data: entry, error } = await sb
     .from('entries')
     .select('*')
@@ -274,7 +275,6 @@
     setAffirmation(next);
   });
 
-  // Load entry values or set default objectives if entry is new
   if(entry){
     document.getElementById('d-grat-1').value = (entry.gratitude && entry.gratitude[0]) || '';
     document.getElementById('d-grat-2').value = (entry.gratitude && entry.gratitude[1]) || '';
@@ -285,12 +285,38 @@
     document.getElementById('d-steps-tomorrow').value = entry.steps_tomorrow || '';
     currentObjectives = entry.objectives || {};
   } else {
+    // Determine yesterday's date string
+    const d = parseDate(selectedDate);
+    d.setDate(d.getDate() - 1);
+    const prevDateStr = fmtDate(d);
+
+    // Fetch yesterday's entry to carry over uncompleted items
+    const { data: prevEntry } = await sb
+      .from('entries')
+      .select('objectives')
+      .eq('user_id', session.user.id)
+      .eq('entry_date', prevDateStr)
+      .maybeSingle();
+
+    currentObjectives = {};
+
+    if(prevEntry && prevEntry.objectives){
+      // Carry forward only uncompleted (false) items from yesterday reset to false
+      Object.keys(prevEntry.objectives).forEach(key => {
+        if(!prevEntry.objectives[key]){
+          currentObjectives[key] = false;
+        }
+      });
+    }
+
+    // Always ensure standard defaults are available if uncompleted list is sparse
     DEFAULT_OBJECTIVES.forEach(title => {
-      currentObjectives[title] = false;
+      if(!(title in currentObjectives)){
+        currentObjectives[title] = false;
+      }
     });
   }
 
-  // Objective Management Logic
   function renderObjectives(){
     const list = document.getElementById('objectives-list');
     const keys = Object.keys(currentObjectives);
@@ -317,7 +343,6 @@
       `;
     }).join('');
 
-    // Attach click triggers for completion toggle
     list.querySelectorAll('.obj-toggle-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.dataset.key;
@@ -326,7 +351,6 @@
       });
     });
 
-    // Attach click triggers for objective deletion
     list.querySelectorAll('.obj-remove-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -358,7 +382,6 @@
     }
   });
 
-  // Initial render of loaded objectives
   renderObjectives();
 
   document.getElementById('btn-save-daily').addEventListener('click', async ()=>{
